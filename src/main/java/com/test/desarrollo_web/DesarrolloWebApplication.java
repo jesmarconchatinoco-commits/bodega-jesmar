@@ -1,5 +1,6 @@
 package com.test.desarrollo_web;
 
+import com.test.desarrollo_web.config.PreparadorBaseDatos;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
@@ -9,7 +10,9 @@ import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 public class DesarrolloWebApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(DesarrolloWebApplication.class, args);
+		SpringApplication aplicacion = new SpringApplication(DesarrolloWebApplication.class);
+		aplicacion.addInitializers(new PreparadorBaseDatos());
+		aplicacion.run(args);
 	}
 
 }
