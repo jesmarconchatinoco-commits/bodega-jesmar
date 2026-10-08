@@ -1,0 +1,2 @@
+org.springframework.boot.EnvironmentPostProcessor=\
+com.test.desarrollo_web.config.PreparadorBaseDatos
