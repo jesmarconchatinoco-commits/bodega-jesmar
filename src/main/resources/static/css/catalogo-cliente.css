@@ -1,0 +1,53 @@
+/* Modal Mi cuenta — catálogo público */
+.cat-cliente-modal .modal-title {
+    font-weight: 600;
+}
+
+.cat-cliente-tabs .nav-link {
+    color: #64748b;
+    font-weight: 600;
+    border: none;
+    border-bottom: 2px solid transparent;
+    border-radius: 0;
+}
+
+.cat-cliente-tabs .nav-link.active {
+    color: var(--cat-primary, #2563eb);
+    background: transparent;
+    border-bottom-color: var(--cat-primary, #2563eb);
+}
+
+.cat-cliente-perfil {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 1rem 1.1rem;
+}
+
+.cat-icon-btn--logged {
+    background: #eff6ff;
+    color: var(--cat-primary, #2563eb);
+}
+
+.cat-user-dot {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #22c55e;
+    border: 2px solid #fff;
+}
+
+.cat-cliente-msg-success {
+    color: #15803d;
+}
+
+.cat-cliente-msg-danger {
+    color: #dc2626;
+}
+
+.cat-cliente-msg-muted {
+    color: #64748b;
+}

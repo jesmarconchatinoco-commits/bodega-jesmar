@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{layout :: commonHead('Cliente')}"></head>
+
+<body class="hold-transition sidebar-mini layout-fixed">
+<div class="wrapper">
+    <div th:replace="~{layout :: header}"></div>
+    <div th:replace="~{layout :: sidebar}"></div>
+    <div class="content-wrapper">
+        <section class="content-header px-3 py-3">
+            <div class="container-fluid">
+                <div class="row mb-2">
+                    <div class="col-sm-6">
+                        <h1 th:text="${cliente.id != null ? 'Editar cliente' : 'Nuevo cliente'}"></h1>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <section class="content px-3">
+            <div class="card">
+                <div class="card-body">
+                    <form th:action="@{/clientes/guardar}" th:object="${cliente}" method="post"
+                        enctype="multipart/form-data">
+                        <input type="hidden" th:field="*{id}" />
+                        <div class="mb-3"><label class="col-form-label">Nombre</label><input class="form-control"
+                                th:field="*{nombre}" placeholder="Ej: Juan Pérez Quispe" required /></div>
+                        <div class="mb-3"><label class="col-form-label">Documento (DNI o RUC)</label><input
+                                class="form-control" th:field="*{documento}" placeholder="DNI 8 dígitos o RUC 11 dígitos" required /></div>
+                        <div class="mb-3"><label class="col-form-label">Teléfono</label><input class="form-control"
+                                th:field="*{telefono}" placeholder="Ej: 987654321" /></div>
+                        <div class="mb-3"><label class="col-form-label">Correo</label><input type="email"
+                                class="form-control" th:field="*{correo}" placeholder="cliente@correo.com" /></div>
+                        <div class="mb-3">
+                            <label class="col-form-label">Imagen</label>
+                            <div class="custom-file">
+                                <input type="file" class="custom-file-input" id="cliente-form-imagen" name="imagenFile"
+                                       accept=".jpg,.jpeg,.png,image/jpeg,image/png">
+                                <label class="custom-file-label" for="cliente-form-imagen">Agregar imagen</label>
+                            </div>
+                        </div>
+                        <div class="mb-3"><label class="col-form-label">Estado</label><select class="custom-select"
+                                th:field="*{estado}">
+                                <option value="ACTIVO">ACTIVO</option>
+                                <option value="INACTIVO">INACTIVO</option>
+                            </select></div>
+                        <button class="btn btn-success">Guardar</button>
+                        <a href="/clientes" class="btn btn-secondary">Cancelar</a>
+                    </form>
+                </div>
+            </div>
+        </section>
+    </div>
+    <div th:replace="~{layout :: footer}"></div>
+</div>
+    <script th:replace="~{layout :: scripts}"></script>
+</body>
+
+</html>

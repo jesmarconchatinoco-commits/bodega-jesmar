@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Restablecer contraseña - Bodega Jesmar</title>
+</head>
+<body style="margin:0;padding:0;background-color:#eef1f8;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;">
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"
+       style="border-collapse:collapse;background-color:#eef1f8;">
+    <tr>
+        <td align="center" style="padding:32px 16px;">
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"
+                   style="border-collapse:collapse;max-width:600px;background:#ffffff;border-radius:12px;
+                          box-shadow:0 12px 36px rgba(44,62,80,0.12);overflow:hidden;">
+
+                <tr>
+                    <td>
+                        <th:block th:replace="~{email/fragments/branding :: header}"></th:block>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td style="padding:32px;">
+                        <p style="margin:0 0 16px;font-size:16px;color:#334155;line-height:1.6;">
+                            Hola <strong th:text="${nombreUsuario}" style="color:#1e293b;">Usuario</strong>,
+                        </p>
+                        <p style="margin:0 0 24px;font-size:15px;color:#475569;line-height:1.65;">
+                            Recibimos una solicitud para restablecer la contraseña de su cuenta en Bodega Jesmar.
+                            Haga clic en el botón para crear una nueva contraseña:
+                        </p>
+
+                        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"
+                               style="border-collapse:collapse;margin:0 0 24px;">
+                            <tr>
+                                <td align="center">
+                                    <a th:href="${enlace}"
+                                       style="display:inline-block;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
+                                              background-color:#667eea;color:#ffffff;text-decoration:none;
+                                              font-size:16px;font-weight:700;padding:15px 32px;border-radius:10px;
+                                              box-shadow:0 8px 20px rgba(102,126,234,0.35);">
+                                        Restablecer contraseña
+                                    </a>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"
+                               style="border-collapse:collapse;margin:0 0 20px;background:#f8fafc;border-radius:10px;">
+                            <tr>
+                                <td style="padding:16px 18px;">
+                                    <p style="margin:0 0 8px;font-size:12px;font-weight:700;color:#64748b;
+                                              text-transform:uppercase;letter-spacing:0.8px;">
+                                        Enlace alternativo
+                                    </p>
+                                    <p style="margin:0;font-size:13px;color:#667eea;line-height:1.55;word-break:break-all;">
+                                        <a th:href="${enlace}" th:text="${enlace}"
+                                           style="color:#667eea;text-decoration:underline;">enlace</a>
+                                    </p>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"
+                               style="border-collapse:collapse;margin:0 0 20px;">
+                            <tr>
+                                <td style="background:#eff6ff;border-left:4px solid #3b82f6;border-radius:8px;padding:14px 16px;">
+                                    <p style="margin:0;font-size:14px;color:#1e40af;line-height:1.55;">
+                                        <strong>&#9201; Este enlace expira en <span th:text="${minutosValidez}">60</span> minutos.</strong><br />
+                                        Si no solicitó este cambio, puede ignorar este correo. Su contraseña actual no se modificará.
+                                    </p>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <p style="margin:0;font-size:14px;color:#64748b;line-height:1.6;">
+                            Por su seguridad, no reenvíe este correo ni comparta el enlace con otras personas.
+                        </p>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>
+                        <th:block th:replace="~{email/fragments/branding :: footer}"></th:block>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
+</body>
+</html>

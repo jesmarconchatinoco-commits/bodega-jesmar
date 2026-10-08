@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{layout :: commonHead('Gestión Slider y Logo')}"></head>
+
+<body class="hold-transition sidebar-mini layout-fixed">
+<div class="wrapper">
+    <div th:replace="~{layout :: header}"></div>
+    <div th:replace="~{layout :: sidebar}"></div>
+    <div class="content-wrapper">
+        <section class="content-header px-3 py-3">
+            <div class="container-fluid">
+                <div class="row mb-2 align-items-center">
+                    <div class="col-sm-6">
+                        <h1 class="m-0"><i class="fas fa-images mr-2"></i>Gestión Slider y Logo</h1>
+                    </div>
+                    <div class="col-sm-6">
+                        <ol class="breadcrumb float-sm-right">
+                            <li class="breadcrumb-item"><a href="/dashboard">Inicio</a></li>
+                            <li class="breadcrumb-item active">Slider y Logo</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="content px-3">
+            <div th:if="${success}" class="alert alert-success alert-dismissible fade show">
+                <i class="fas fa-check-circle mr-1"></i><span th:text="${success}"></span>
+                <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+            </div>
+            <div th:if="${error}" class="alert alert-danger alert-dismissible fade show">
+                <i class="fas fa-exclamation-circle mr-1"></i><span th:text="${error}"></span>
+                <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+            </div>
+
+            <div class="row">
+                <!-- Logo (izquierda 50%) -->
+                <div class="col-lg-6 mb-4">
+                    <div class="card card-outline card-primary erp-page-card h-100">
+                        <div class="card-header">
+                            <h3 class="card-title mb-0"><i class="fas fa-store mr-1"></i> Logo de la Tienda</h3>
+                        </div>
+                        <div class="card-body">
+                            <form th:action="@{/imagen-slider/logo}" method="post" enctype="multipart/form-data" id="logoForm">
+                                <div class="form-group">
+                                    <label for="logoFile">Ingresar imagen (JPG o PNG, máx. 2 MB)</label>
+                                    <div class="custom-file">
+                                        <input type="file" class="custom-file-input" id="logoFile" name="imagenFile" required
+                                               accept=".jpg,.jpeg,.png,image/jpeg,image/png">
+                                        <label class="custom-file-label" for="logoFile">Agregar imagen</label>
+                                    </div>
+                                </div>
+
+                                <h6 class="text-muted mb-3 mt-4">
+                                    <i class="fas fa-eye mr-1"></i> Vista previa — dónde se verá el logo
+                                </h6>
+                                <div class="logo-context-previews mb-3">
+                                    <div class="logo-context-card">
+                                        <div class="logo-context-label">Login</div>
+                                        <div class="preview-login-header">
+                                            <div class="preview-brand-badge">
+                                                <img class="preview-logo-img"
+                                                     th:src="${logoUrl}"
+                                                     th:style="${logoUrl != null} ? 'display:block' : 'display:none'"
+                                                     alt="Logo login">
+                                                <i class="fas fa-warehouse preview-logo-icon"
+                                                   th:style="${logoUrl != null} ? 'display:none' : 'display:block'"></i>
+                                            </div>
+                                            <span class="preview-title">Jesmar Bodega</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="logo-context-card">
+                                        <div class="logo-context-label">Menú lateral</div>
+                                        <div class="preview-sidebar-brand">
+                                            <span class="preview-logo-wrap"
+                                                  th:style="${logoUrl != null} ? 'display:inline-flex' : 'display:none'">
+                                                <img class="preview-logo-img"
+                                                     th:src="${logoUrl}"
+                                                     alt="Logo menú">
+                                            </span>
+                                            <i class="fas fa-warehouse preview-logo-icon"
+                                               th:style="${logoUrl != null} ? 'display:none' : 'display:inline-flex'"></i>
+                                            <span>Bodega <strong>Jesmar</strong></span>
+                                        </div>
+                                    </div>
+
+                                    <div class="logo-context-card">
+                                        <div class="logo-context-label">Catálogo</div>
+                                        <div class="preview-catalogo">
+                                            <span class="preview-logo-wrap"
+                                                  th:style="${logoUrl != null} ? 'display:inline-flex' : 'display:none'">
+                                                <img class="preview-logo-img"
+                                                     th:src="${logoUrl}"
+                                                     alt="Logo catálogo">
+                                            </span>
+                                            <span class="preview-catalogo-fallback"
+                                                  th:style="${logoUrl != null} ? 'display:none' : 'display:block'">Bodega Jesmar</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <button type="submit" class="btn btn-primary btn-block">
+                                    <i class="fas fa-upload mr-1"></i> Agregar Logo
+                                </button>
+                            </form>
+
+                            <h6 class="text-muted mb-3 mt-4">
+                                <i class="fas fa-images mr-1"></i> Galería de logos
+                            </h6>
+                            <div th:if="${#lists.isEmpty(logos)}" class="text-center text-muted py-3 border rounded">
+                                <i class="fas fa-image fa-2x mb-2 d-block"></i>
+                                <p class="mb-0 small">Aún no hay logos. Suba el primero arriba.</p>
+                            </div>
+                            <div class="logo-gallery" th:unless="${#lists.isEmpty(logos)}">
+                                <div class="logo-thumb"
+                                     th:each="item : ${logos}"
+                                     th:classappend="${logoActivo != null and item.id == logoActivo.id} ? ' logo-thumb--active' : ''"
+                                     th:attr="data-logo-url=${item.imagen != null} ? @{/archivos/{ruta}(ruta=${item.imagen.ruta})} : ''">
+                                    <span th:if="${logoActivo != null and item.id == logoActivo.id}"
+                                          class="logo-active-badge">Activo</span>
+                                    <img th:if="${item.imagen != null}"
+                                         th:src="@{/archivos/{ruta}(ruta=${item.imagen.ruta})}"
+                                         th:alt="${item.descripcion}">
+                                    <div class="logo-thumb-actions">
+                                        <form th:action="@{/imagen-slider/logo/seleccionar/{id}(id=${item.id})}"
+                                              method="post" class="d-inline"
+                                              th:if="${logoActivo == null or item.id != logoActivo.id}">
+                                            <button type="submit" class="btn btn-success btn-sm btn-block mb-1"
+                                                    title="Usar este logo">
+                                                <i class="fas fa-check mr-1"></i> Usar
+                                            </button>
+                                        </form>
+                                        <a th:href="@{/imagen-slider/logo/eliminar/{id}(id=${item.id})}"
+                                           class="btn btn-danger btn-sm btn-block"
+                                           th:if="${logoActivo == null or item.id != logoActivo.id}"
+                                           onclick="return confirm('¿Eliminar este logo de la galería?')">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slider (derecha 50%) -->
+                <div class="col-lg-6 mb-4">
+                    <div class="card card-outline card-info erp-page-card h-100">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h3 class="card-title mb-0"><i class="fas fa-sliders-h mr-1"></i> Imágenes del Slider</h3>
+                            <a href="/catalogo" target="_blank" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-external-link-alt mr-1"></i> Ver Catálogo
+                            </a>
+                        </div>
+                        <div class="card-body">
+                            <form th:action="@{/imagen-slider/slider}" method="post" enctype="multipart/form-data"
+                                  id="sliderForm">
+                                <div class="form-group">
+                                    <label for="sliderFiles">Agregar imágenes (JPG o PNG, máx. 2 MB c/u)</label>
+                                    <div class="custom-file">
+                                        <input type="file" class="custom-file-input" id="sliderFiles" name="imagenFiles" required
+                                               accept=".jpg,.jpeg,.png,image/jpeg,image/png" multiple>
+                                        <label class="custom-file-label" for="sliderFiles">Agregar imagen</label>
+                                    </div>
+                                    <small class="form-text text-muted">
+                                        Puede seleccionar varias imágenes a la vez.
+                                        Tamaño recomendado: <strong>960 × 260 px</strong> (banner horizontal).
+                                    </small>
+                                </div>
+                                <button type="submit" class="btn btn-info btn-block">
+                                    <i class="fas fa-plus mr-1"></i> Agregar al Slider
+                                </button>
+                            </form>
+
+                            <h6 class="text-muted mb-3 mt-4">
+                                <i class="fas fa-th mr-1"></i> Galería del Slider
+                            </h6>
+                            <div th:if="${#lists.isEmpty(sliders)}" class="text-center text-muted py-3 border rounded">
+                                <i class="fas fa-images fa-2x mb-2 d-block"></i>
+                                <p class="mb-0 small">Aún no hay imágenes en el slider. Agregue la primera arriba.</p>
+                            </div>
+                            <div class="slider-gallery" th:unless="${#lists.isEmpty(sliders)}">
+                                <div class="slider-thumb" th:each="slider : ${sliders}">
+                                    <img th:if="${slider.imagen != null}"
+                                         th:src="@{/archivos/{ruta}(ruta=${slider.imagen.ruta})}"
+                                         alt="Imagen del slider">
+                                    <a th:href="@{/imagen-slider/eliminar/{id}(id=${slider.id})}"
+                                       class="btn btn-danger btn-sm btn-remove"
+                                       onclick="return confirm('¿Eliminar esta imagen del slider?')">
+                                        <i class="fas fa-times"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <div th:replace="~{layout :: footer}"></div>
+</div>
+    <script th:replace="~{layout :: scripts}"></script>
+    <script>
+        (function () {
+            const fileInput = document.getElementById('logoFile');
+            if (!fileInput) return;
+
+            const previewImages = document.querySelectorAll('.preview-logo-img');
+            const previewWraps = document.querySelectorAll('.preview-logo-wrap');
+            const previewIcons = document.querySelectorAll('.preview-logo-icon');
+            const catalogFallback = document.querySelector('.preview-catalogo-fallback');
+
+            function showLogoPreview(src) {
+                previewImages.forEach(function (img) {
+                    img.src = src;
+                });
+                previewWraps.forEach(function (wrap) {
+                    wrap.style.display = 'inline-flex';
+                });
+                previewIcons.forEach(function (icon) {
+                    icon.style.display = 'none';
+                });
+                if (catalogFallback) {
+                    catalogFallback.style.display = 'none';
+                }
+            }
+
+            function showDefaultPreview() {
+                const currentUrl = /*[[${logoUrl}]]*/ null;
+                if (currentUrl) {
+                    showLogoPreview(currentUrl);
+                    return;
+                }
+                previewWraps.forEach(function (wrap) {
+                    wrap.style.display = 'none';
+                });
+                previewIcons.forEach(function (icon) {
+                    icon.style.display = icon.classList.contains('preview-logo-icon') && icon.closest('.preview-sidebar-brand')
+                        ? 'inline-flex' : 'block';
+                });
+                if (catalogFallback) {
+                    catalogFallback.style.display = 'block';
+                }
+            }
+
+            fileInput.addEventListener('change', function () {
+                const file = fileInput.files && fileInput.files[0];
+                if (!file) {
+                    showDefaultPreview();
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    showLogoPreview(e.target.result);
+                };
+                reader.readAsDataURL(file);
+            });
+
+            document.querySelectorAll('.logo-thumb[data-logo-url]').forEach(function (thumb) {
+                thumb.addEventListener('click', function (e) {
+                    if (e.target.closest('button, a, form')) return;
+                    const url = thumb.getAttribute('data-logo-url');
+                    if (url) showLogoPreview(url);
+                });
+            });
+        })();
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{layout :: commonHead('Gestión de Usuarios')}"></head>
+
+<body class="hold-transition sidebar-mini layout-fixed">
+<div class="wrapper">
+    <div th:replace="~{layout :: header}"></div>
+    <div th:replace="~{layout :: sidebar}"></div>
+
+    <div class="content-wrapper">
+
+        <!-- ENCABEZADO -->
+        <div class="content-header">
+            <div class="container-fluid">
+                <div class="row mb-2">
+                    <div class="col-sm-6">
+                        <h1 class="m-0">Gestión de Usuarios</h1>
+                    </div>
+                    <div class="col-sm-6">
+                        <ol class="breadcrumb float-sm-right">
+                            <li class="breadcrumb-item"><a href="/dashboard">Inicio</a></li>
+                            <li class="breadcrumb-item active">Gestión de Usuarios</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <section class="content">
+            <div class="container-fluid">
+
+                <!-- MENSAJES FLASH -->
+                <div th:if="${success}" class="alert alert-success alert-dismissible fade show">
+                    <i class="fas fa-check-circle mr-1"></i>
+                    <span th:text="${success}"></span>
+                    <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+                </div>
+                <div th:if="${error}" class="alert alert-danger alert-dismissible fade show">
+                    <i class="fas fa-exclamation-circle mr-1"></i>
+                    <span th:text="${error}"></span>
+                    <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+                </div>
+
+                <div class="card card-outline card-primary erp-page-card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h3 class="card-title mb-0">
+                            <i class="fas fa-users-cog mr-1"></i> Listado de Usuarios
+                        </h3>
+                        <button type="button" class="btn btn-primary btn-sm btn-erp-nuevo" onclick="abrirModalUsuario(null)"
+                            data-toggle="tooltip" title="Registrar nuevo usuario">
+                            <i class="fas fa-user-plus"></i> Nuevo Usuario
+                        </button>
+                    </div>
+                    <div class="card-body p-0 tabla-card-body">
+                        <table class="table table-hover table-striped table-bordered mb-0 tabla-modulo">
+                            <thead class="thead-dark">
+                                <tr>
+                                    <th class="text-center" style="width:50px">ID</th>
+                                    <th>Nombre</th>
+                                    <th>Usuario</th>
+                                    <th>Perfil</th>
+                                    <th>Correo</th>
+                                    <th>Teléfono</th>
+                                    <th class="text-center" style="width:90px">Estado</th>
+                                    <th class="text-center" style="width:150px">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="u : ${usuarios}">
+                                    <td class="text-center align-middle" th:text="${u.id}"></td>
+                                    <td class="align-middle" th:text="${u.nombre}"></td>
+                                    <td class="align-middle" th:text="${u.usuario}"></td>
+                                    <td class="align-middle">
+                                        <span th:text="${u.perfil != null ? u.perfil.nombre : '—'}"></span>
+                                    </td>
+                                    <td class="align-middle" th:text="${u.correo}"></td>
+                                    <td class="align-middle" th:text="${u.telefono != null ? u.telefono : '—'}"></td>
+                                    <td class="text-center align-middle">
+                                        <span th:if="${u.estado.name() == 'ACTIVO'}"
+                                            class="badge badge-success">Activo</span>
+                                        <span th:if="${u.estado.name() == 'INACTIVO'}"
+                                            class="badge badge-danger">Inactivo</span>
+                                    </td>
+                                    <td class="col-acciones text-center align-middle">
+                                        <div class="tabla-acciones-btns">
+                                        <button type="button" class="btn btn-sm btn-info btn-actualizar-contrasena" title="Actualizar contraseña"
+                                            th:attr="data-id=${u.id}, data-nombre=${u.nombre}, data-correo=${u.correo}">
+                                            <i class="fas fa-key"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-warning btn-editar-usuario" title="Editar"
+                                            th:attr="data-id=${u.id}, data-nombre=${u.nombre}, data-usuario=${u.usuario},
+                                                     data-correo=${u.correo}, data-telefono=${u.telefono},
+                                                     data-perfil-id=${u.perfil != null ? u.perfil.id : ''},
+                                                     data-estado=${u.estado != null ? u.estado.name() : ''}">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <a th:if="${u.usuario == null or !#strings.equalsIgnoreCase(u.usuario, 'admin')}"
+                                            th:href="@{/usuarios/eliminar/{id}(id=${u.id})}"
+                                            class="btn btn-sm btn-danger" title="Eliminar"
+                                            onclick="return confirm('¿Dar de baja a este empleado de la bodega?')">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                        <span th:if="${u.usuario != null and #strings.equalsIgnoreCase(u.usuario, 'admin')}"
+                                            class="btn btn-sm btn-secondary disabled" title="El administrador principal no puede eliminarse">
+                                            <i class="fas fa-trash"></i>
+                                        </span>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr th:if="${#lists.isEmpty(usuarios)}">
+                                    <td colspan="8" class="text-center text-muted py-4">
+                                        <i class="fas fa-inbox fa-2x mb-2 d-block"></i>
+                                        No hay usuarios registrados.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="card-footer text-muted text-sm">
+                        Total: <strong th:text="${#lists.size(usuarios)}"></strong> usuario(s)
+                    </div>
+                </div>
+
+            </div>
+        </section>
+    </div>
+
+
+    <!-- ============ MODAL USUARIO ============ -->
+    <div class="modal fade modal-erp" id="modalUsuario" tabindex="-1" role="dialog" aria-labelledby="tituloModalUsuario"
+        aria-hidden="true" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+            <div class="modal-content">
+
+                <div class="modal-header bg-primary">
+                    <h5 class="modal-title text-white" id="tituloModalUsuario">
+                        <i class="fas fa-user-plus mr-1"></i> Nuevo Usuario
+                    </h5>
+                    <button type="button" class="close text-white" data-dismiss="modal"
+                        onclick="limpiarUsuario()"><span>&times;</span></button>
+                </div>
+
+                <form id="formUsuario" th:action="@{/usuarios/guardar}" method="post" enctype="multipart/form-data"
+                    novalidate>
+                    <div class="modal-body">
+
+                        <input type="hidden" id="usu-id" name="id" />
+
+                        <div class="row">
+                            <!-- Nombre -->
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Nombre completo <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="usu-nombre" name="nombre"
+                                        placeholder="Ej: María López Paredes" maxlength="100" autocomplete="off"
+                                        pattern="[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+"
+                                        title="Solo letras y espacios" />
+                                    <div class="invalid-feedback" id="err-usu-nombre"></div>
+                                    <small class="form-text text-muted">Solo letras y espacios. Sin números ni caracteres especiales.</small>
+                                </div>
+                            </div>
+                            <!-- Usuario -->
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Usuario <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="usu-usuario" name="usuarioLogin"
+                                        placeholder="Ej: mlopez" maxlength="50" autocomplete="off"
+                                        pattern="[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ]+"
+                                        title="Solo letras" />
+                                    <div class="invalid-feedback" id="err-usu-usuario"></div>
+                                    <small class="form-text text-muted">Solo letras. Sin números, espacios ni caracteres especiales.</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <!-- Correo -->
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Correo electrónico <span class="text-danger">*</span></label>
+                                    <input type="email" class="form-control" id="usu-correo" name="correo"
+                                        placeholder="vendedor@bodegajesmar.com" maxlength="100" autocomplete="off" />
+                                    <div class="invalid-feedback" id="err-usu-correo"></div>
+                                </div>
+                            </div>
+                            <!-- Teléfono -->
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Teléfono</label>
+                                    <input type="text" class="form-control" id="usu-telefono" name="telefono"
+                                        placeholder="987654321" maxlength="9" inputmode="numeric"
+                                        pattern="9[0-9]{8}" title="9 dígitos, comienza con 9" />
+                                    <div class="invalid-feedback" id="err-usu-telefono"></div>
+                                    <small class="form-text text-muted">Opcional. Teléfono de contacto del empleado.</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <!-- Perfil -->
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Perfil <span class="text-danger">*</span></label>
+                                    <select class="form-control" id="usu-perfil" name="perfilId">
+                                        <option value="">-- Seleccione --</option>
+                                        <option th:each="p : ${perfiles}" th:value="${p.id}" th:text="${p.nombre}">
+                                        </option>
+                                    </select>
+                                    <div class="invalid-feedback" id="err-usu-perfil"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <!-- Contraseña -->
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Contraseña <span class="text-danger" id="pass-requerida">*</span></label>
+                                    <div class="input-group">
+                                        <input type="password" class="form-control" id="usu-password" name="password"
+                                            placeholder="Mínimo 6 caracteres" maxlength="100" />
+                                        <div class="input-group-append">
+                                            <button class="btn btn-outline-secondary" type="button"
+                                                onclick="togglePass('usu-password', this)">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="text-danger small mt-1" id="err-usu-password"></div>
+                                    <small class="form-text text-muted" id="pass-hint">Mínimo 6 caracteres.</small>
+                                </div>
+                            </div>
+                            <!-- Confirmar contraseña -->
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Confirmar contraseña <span class="text-danger"
+                                            id="pass2-requerida">*</span></label>
+                                    <div class="input-group">
+                                        <input type="password" class="form-control" id="usu-password2"
+                                            placeholder="Repita la contraseña" maxlength="100" />
+                                        <div class="input-group-append">
+                                            <button class="btn btn-outline-secondary" type="button"
+                                                onclick="togglePass('usu-password2', this)">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="text-danger small mt-1" id="err-usu-password2"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <!-- Foto -->
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Foto de perfil</label>
+                                    <div class="custom-file">
+                                        <input type="file" class="custom-file-input" id="usu-imagen" name="imagenFile"
+                                            accept=".jpg,.jpeg,.png,image/jpeg,image/png" />
+                                        <label class="custom-file-label" for="usu-imagen">Agregar imagen</label>
+                                    </div>
+                                    <div class="text-danger small mt-1" id="err-usu-imagen"></div>
+                                    <small class="form-text text-muted">Solo JPG y PNG. Máx. 2 MB.</small>
+                                    <div id="usu-preview-container" class="mt-2" style="display:none;">
+                                        <img id="usu-preview-img" src="#" alt="Vista previa"
+                                            style="width:80px;height:80px;object-fit:cover;border-radius:50%;border:2px solid #dee2e6;" />
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Estado -->
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Estado <span class="text-danger">*</span></label>
+                                    <select class="form-control" id="usu-estado" name="estado">
+                                        <option value="">-- Seleccione --</option>
+                                        <option value="ACTIVO">ACTIVO</option>
+                                        <option value="INACTIVO">INACTIVO</option>
+                                    </select>
+                                    <div class="invalid-feedback" id="err-usu-estado"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div><!-- /.modal-body -->
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="limpiarUsuario()">
+                            <i class="fas fa-times"></i> Cancelar
+                        </button>
+                        <button type="button" class="btn btn-primary" onclick="validarUsuario()">
+                            <i class="fas fa-save"></i> Guardar
+                        </button>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+    <!-- ========== FIN MODAL USUARIO ========== -->
+
+    <!-- ============ MODAL CONTRASEÑA ============ -->
+    <div class="modal fade modal-erp" id="modalContrasena" tabindex="-1" role="dialog"
+        aria-labelledby="tituloModalContrasena" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog modal-md modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-info">
+                    <h5 class="modal-title text-white" id="tituloModalContrasena">
+                        <i class="fas fa-key mr-1"></i> Actualizar contraseña
+                    </h5>
+                    <button type="button" class="close text-white" data-dismiss="modal"
+                        onclick="limpiarContrasena()"><span>&times;</span></button>
+                </div>
+
+                <form id="formContrasena" method="post" novalidate>
+                    <div class="modal-body">
+                        <p class="text-muted small mb-3">
+                            Usuario: <strong id="pass-usuario-nombre"></strong><br>
+                            Cree una contraseña segura. Debe incluir letras, números y al menos un punto (.).
+                        </p>
+
+                        <div class="form-group">
+                            <label>Nueva contraseña <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <input type="password" class="form-control" id="pass-nueva" name="password"
+                                    placeholder="Mínimo 8 caracteres" autocomplete="new-password" minlength="8" />
+                                <div class="input-group-append">
+                                    <button type="button" class="btn btn-outline-secondary"
+                                        onclick="togglePass('pass-nueva', this)">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Confirmar contraseña <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <input type="password" class="form-control" id="pass-confirmar" name="confirmacion"
+                                    placeholder="Repita la contraseña" autocomplete="new-password" minlength="8" />
+                                <div class="input-group-append">
+                                    <button type="button" class="btn btn-outline-secondary"
+                                        onclick="togglePass('pass-confirmar', this)">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <ul class="small text-muted mb-3 pl-3" id="reglas-pass-usuario">
+                            <li id="regla-pass-longitud">Al menos 8 caracteres</li>
+                            <li id="regla-pass-letras">Incluir letras</li>
+                            <li id="regla-pass-numeros">Incluir números</li>
+                            <li id="regla-pass-puntos">Incluir al menos un punto (.)</li>
+                            <li id="regla-pass-coinciden">Las contraseñas coinciden</li>
+                        </ul>
+
+                        <div id="err-pass-usuario" class="alert alert-danger py-2" style="display:none;" role="alert"></div>
+
+                        <hr class="my-3">
+
+                        <p class="small text-muted mb-2">
+                            También puede enviar al correo <strong id="pass-usuario-correo"></strong> el mismo enlace
+                            de recuperación que usa el login.
+                        </p>
+                    </div>
+
+                    <div class="modal-footer flex-wrap justify-content-between">
+                        <button type="button" class="btn btn-outline-primary btn-sm" id="btn-enviar-enlace-pass"
+                            title="Enviar enlace al correo del usuario">
+                            <i class="fas fa-envelope mr-1"></i> Enviar enlace por correo
+                        </button>
+                        <div>
+                            <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal"
+                                onclick="limpiarContrasena()">
+                                <i class="fas fa-times"></i> Cancelar
+                            </button>
+                            <button type="submit" class="btn btn-info btn-sm">
+                                <i class="fas fa-save"></i> Guardar contraseña
+                            </button>
+                        </div>
+                    </div>
+                </form>
+
+                <form id="formEnviarEnlace" method="post" class="d-none"></form>
+            </div>
+        </div>
+    </div>
+    <!-- ========== FIN MODAL CONTRASEÑA ========== -->
+
+
+    <div th:replace="~{layout :: footer}"></div>
+</div><!-- /.wrapper -->
+
+    <script th:replace="~{layout :: scripts}"></script>
+    <script src="/js/contrasena-segura.js"></script>
+
+    <script>
+        var usuarioContrasenaId = null;
+
+        function abrirModalContrasena(id, nombre, correo) {
+            limpiarContrasena();
+            usuarioContrasenaId = id;
+            $('#pass-usuario-nombre').text(nombre || '');
+            $('#pass-usuario-correo').text(correo || '—');
+            $('#formContrasena').attr('action', '/usuarios/' + id + '/actualizar-contrasena');
+            $('#formEnviarEnlace').attr('action', '/usuarios/' + id + '/enviar-enlace-contrasena');
+            $('#btn-enviar-enlace-pass').prop('disabled', !correo);
+            $('#tituloModalContrasena').html(
+                '<i class="fas fa-key mr-1"></i> Actualizar contraseña — ' + $('<div>').text(nombre || '').html()
+            );
+            $('#modalContrasena').modal('show');
+        }
+
+        function limpiarContrasena() {
+            usuarioContrasenaId = null;
+            $('#formContrasena')[0].reset();
+            $('#err-pass-usuario').hide().text('');
+            $('#reglas-pass-usuario li').removeClass('text-success text-danger').addClass('text-muted');
+        }
+
+        $(document).on('click', '.btn-actualizar-contrasena', function () {
+            var btn = $(this);
+            abrirModalContrasena(
+                btn.data('id'),
+                btn.data('nombre'),
+                btn.data('correo')
+            );
+        });
+
+        $('#btn-enviar-enlace-pass').on('click', function () {
+            if (!usuarioContrasenaId) return;
+            var correo = $('#pass-usuario-correo').text();
+            if (!correo || correo === '—') {
+                alert('El usuario no tiene correo registrado.');
+                return;
+            }
+            if (!confirm('¿Enviar enlace de recuperación al correo ' + correo + '?')) {
+                return;
+            }
+            $('#formEnviarEnlace').submit();
+        });
+
+        if (window.ContrasenaSegura) {
+            ContrasenaSegura.init({
+                formId: 'formContrasena',
+                passwordId: 'pass-nueva',
+                confirmacionId: 'pass-confirmar',
+                errorId: 'err-pass-usuario',
+                reglaLongitudId: 'regla-pass-longitud',
+                reglaLetrasId: 'regla-pass-letras',
+                reglaNumerosId: 'regla-pass-numeros',
+                reglaPuntosId: 'regla-pass-puntos',
+                reglaCoincidenId: 'regla-pass-coinciden'
+            });
+        }
+
+        /* ─── ABRIR MODAL USUARIO ─────────────────────── */
+        function abrirModalUsuario(u) {
+            limpiarUsuario();
+            const esNuevo = !u || !u.id;
+
+            $('#tituloModalUsuario').html(esNuevo
+                ? '<i class="fas fa-user-plus mr-1"></i> Nuevo Usuario'
+                : '<i class="fas fa-user-edit mr-1"></i> Editar Usuario');
+
+            if (!esNuevo) {
+                $('#usu-id').val(u.id);
+                $('#usu-nombre').val(u.nombre);
+                $('#usu-usuario').val(u.usuario);
+                $('#usu-correo').val(u.correo);
+                $('#usu-telefono').val(u.telefono || '');
+                $('#usu-perfil').val(u.perfilId);
+                $('#usu-estado').val(u.estado);
+                // Contraseña opcional al editar
+                $('#pass-hint').text('Dejar en blanco para no cambiar la contraseña.');
+                $('#pass-requerida, #pass2-requerida').hide();
+            } else {
+                $('#pass-hint').text('Mínimo 6 caracteres.');
+                $('#pass-requerida, #pass2-requerida').show();
+            }
+            $('#modalUsuario').modal('show');
+        }
+
+        /* ─── VALIDAR USUARIO ─────────────────────────── */
+        function validarUsuario() {
+            let valido = true;
+            limpiarErrUsuario();
+            const esNuevo = !$('#usu-id').val();
+
+            // Nombre
+            const nombre = $('#usu-nombre').val().trim();
+            const regNombre = /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$/;
+            if (!nombre) {
+                errUsu('usu-nombre', 'err-usu-nombre', 'Ingrese el nombre del empleado de la bodega.');
+                valido = false;
+            } else if (!regNombre.test(nombre)) {
+                errUsu('usu-nombre', 'err-usu-nombre', 'El nombre solo puede contener letras (sin números ni caracteres especiales).');
+                valido = false;
+            } else if (nombre.length < 3) {
+                errUsu('usu-nombre', 'err-usu-nombre', 'El nombre del empleado debe tener al menos 3 caracteres.');
+                valido = false;
+            }
+
+            // Usuario
+            const usuario = $('#usu-usuario').val().trim();
+            const regUser = /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ]+$/;
+            if (!usuario) {
+                errUsu('usu-usuario', 'err-usu-usuario', 'Ingrese el usuario de acceso al sistema.');
+                valido = false;
+            } else if (!regUser.test(usuario)) {
+                errUsu('usu-usuario', 'err-usu-usuario', 'El usuario solo puede contener letras (sin números ni caracteres especiales).');
+                valido = false;
+            } else if (usuario.length < 3) {
+                errUsu('usu-usuario', 'err-usu-usuario', 'El usuario de acceso debe tener al menos 3 caracteres.');
+                valido = false;
+            }
+
+            // Correo
+            const correo = $('#usu-correo').val().trim();
+            const regEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!correo) {
+                errUsu('usu-correo', 'err-usu-correo', 'Ingrese el correo del empleado.');
+                valido = false;
+            } else if (!regEmail.test(correo)) {
+                errUsu('usu-correo', 'err-usu-correo', 'Ingrese un correo válido para contacto.');
+                valido = false;
+            }
+
+            // Teléfono (opcional, 9 dígitos Perú)
+            const telefono = $('#usu-telefono').val().trim();
+            if (telefono && !/^9\d{8}$/.test(telefono)) {
+                errUsu('usu-telefono', 'err-usu-telefono', 'El teléfono debe tener 9 dígitos y comenzar con 9.');
+                valido = false;
+            }
+
+            // Perfil
+            if (!$('#usu-perfil').val()) {
+                errUsu('usu-perfil', 'err-usu-perfil', 'Seleccione el rol del empleado (ej: Vendedor, Almacenero).');
+                valido = false;
+            }
+
+            // Contraseña
+            const pass = $('#usu-password').val();
+            const pass2 = $('#usu-password2').val();
+            if (esNuevo) {
+                if (!pass) {
+                    $('#err-usu-password').text('La contraseña es obligatoria para nuevos usuarios de la bodega.');
+                    valido = false;
+                } else if (pass.length < 6) {
+                    $('#err-usu-password').text('La contraseña debe tener al menos 6 caracteres.');
+                    valido = false;
+                } else if (pass !== pass2) {
+                    $('#err-usu-password2').text('Las contraseñas no coinciden.');
+                    valido = false;
+                }
+            } else if (pass) {
+                if (pass.length < 6) {
+                    $('#err-usu-password').text('La contraseña debe tener al menos 6 caracteres.');
+                    valido = false;
+                } else if (pass !== pass2) {
+                    $('#err-usu-password2').text('Las contraseñas no coinciden.');
+                    valido = false;
+                }
+            }
+
+            // Imagen
+            const fileInput = document.getElementById('usu-imagen');
+            if (fileInput.files && fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                const ok = ['image/jpeg', 'image/png'];
+                if (!ok.includes(file.type)) {
+                    $('#err-usu-imagen').text('La foto del empleado debe ser JPG o PNG.');
+                    valido = false;
+                } else if (file.size > 2 * 1024 * 1024) {
+                    $('#err-usu-imagen').text('La foto del empleado no puede superar 2 MB.');
+                    valido = false;
+                }
+            }
+
+            // Estado
+            if (!$('#usu-estado').val()) {
+                errUsu('usu-estado', 'err-usu-estado', 'Indique si el empleado estará activo en la bodega.');
+                valido = false;
+            }
+
+            if (valido) $('#formUsuario').submit();
+        }
+
+        /* ─── HELPERS USUARIO ─────────────────────────── */
+        function errUsu(campo, errId, msg) {
+            $('#' + campo).addClass('is-invalid');
+            $('#' + errId).text(msg);
+        }
+
+        function limpiarErrUsuario() {
+            ['usu-nombre', 'usu-usuario', 'usu-correo', 'usu-telefono', 'usu-perfil', 'usu-estado']
+                .forEach(id => $('#' + id).removeClass('is-invalid is-valid'));
+            ['err-usu-nombre', 'err-usu-usuario', 'err-usu-correo', 'err-usu-telefono', 'err-usu-perfil',
+                'err-usu-password', 'err-usu-password2', 'err-usu-imagen', 'err-usu-estado']
+                .forEach(id => $('#' + id).text(''));
+        }
+
+        function limpiarUsuario() {
+            limpiarErrUsuario();
+            $('#formUsuario')[0].reset();
+            $('#usu-id').val('');
+            $('#usu-preview-container').hide();
+            $('#usu-imagen').next('.custom-file-label').text('Agregar imagen');
+        }
+
+        function togglePass(inputId, btn) {
+            const input = document.getElementById(inputId);
+            const icono = btn.querySelector('i');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icono.classList.replace('fa-eye', 'fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icono.classList.replace('fa-eye-slash', 'fa-eye');
+            }
+        }
+
+        // Vista previa foto
+        $('#usu-imagen').on('change', function () {
+            const file = this.files[0];
+            $(this).next('.custom-file-label').text(file ? file.name : 'Agregar imagen');
+            if (file && file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = e => {
+                    $('#usu-preview-img').attr('src', e.target.result);
+                    $('#usu-preview-container').show();
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Limpiar errores al escribir
+        ['usu-nombre', 'usu-usuario', 'usu-correo', 'usu-telefono', 'usu-perfil', 'usu-estado'].forEach(id => {
+            $('#' + id).on('input change', function () {
+                $(this).removeClass('is-invalid');
+                $('#err-' + id).text('');
+            });
+        });
+
+        const soloLetras = /[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ]/;
+        const teclasPermitidas = ['Backspace', 'Delete', 'Tab', 'ArrowLeft', 'ArrowRight', 'Home', 'End'];
+
+        function filtrarTexto(input, permitirEspacios) {
+            const patron = permitirEspacios ? /[^a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]/g : /[^a-zA-ZáéíóúÁÉÍÓÚñÑüÜ]/g;
+            const limpio = input.value.replace(patron, '');
+            if (input.value !== limpio) {
+                input.value = limpio;
+            }
+        }
+
+        function bloquearTeclasInvalidas(e, permitirEspacios) {
+            if (e.ctrlKey || e.metaKey || e.altKey || teclasPermitidas.includes(e.key)) {
+                return;
+            }
+            if (permitirEspacios && e.key === ' ') {
+                return;
+            }
+            if (!soloLetras.test(e.key)) {
+                e.preventDefault();
+            }
+        }
+
+        function sanitizarPegado(e, permitirEspacios) {
+            e.preventDefault();
+            const input = e.target;
+            const texto = (e.originalEvent || e).clipboardData.getData('text');
+            const patron = permitirEspacios ? /[^a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]/g : /[^a-zA-ZáéíóúÁÉÍÓÚñÑüÜ]/g;
+            const limpio = texto.replace(patron, '');
+            const inicio = input.selectionStart;
+            const fin = input.selectionEnd;
+            input.value = input.value.slice(0, inicio) + limpio + input.value.slice(fin);
+            input.selectionStart = input.selectionEnd = inicio + limpio.length;
+            input.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+
+        // Nombre: solo letras y espacios
+        $('#usu-nombre')
+            .on('input', function () { filtrarTexto(this, true); })
+            .on('keydown', function (e) { bloquearTeclasInvalidas(e, true); })
+            .on('paste', function (e) { sanitizarPegado(e, true); });
+
+        // Usuario: solo letras
+        $('#usu-usuario')
+            .on('input', function () { filtrarTexto(this, false); })
+            .on('keydown', function (e) { bloquearTeclasInvalidas(e, false); })
+            .on('paste', function (e) { sanitizarPegado(e, false); });
+
+        $('#modalUsuario').on('hidden.bs.modal', function () {
+            limpiarUsuario();
+        });
+
+        // Botones de la tabla (evita errores por comillas en th:onclick)
+        $(document).on('click', '.btn-editar-usuario', function () {
+            const $btn = $(this);
+            abrirModalUsuario({
+                id:       parseInt($btn.data('id'), 10),
+                nombre:   $btn.data('nombre') || '',
+                usuario:  $btn.data('usuario') || '',
+                correo:   $btn.data('correo') || '',
+                telefono: $btn.data('telefono') || '',
+                perfilId: $btn.data('perfil-id') || '',
+                estado:   $btn.data('estado') || ''
+            });
+        });
+    </script>
+
+</body>
+
+</html>

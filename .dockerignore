@@ -1,0 +1,7 @@
+target
+.git
+.github
+.VSCodeCounter
+src/main/resources/application-local.properties
+*.md
+*.log

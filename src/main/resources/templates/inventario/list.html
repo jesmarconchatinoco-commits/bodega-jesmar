@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <th:block th:replace="~{layout :: commonHead('Gestión de Inventario')}" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <link rel="stylesheet" href="/css/inventario.css" />
+</head>
+
+<body class="hold-transition sidebar-mini layout-fixed inventario-page">
+
+<div class="wrapper">
+    <div th:replace="~{layout :: header}"></div>
+    <div th:replace="~{layout :: sidebar}"></div>
+
+    <div class="content-wrapper">
+        <section class="content-header px-3 py-3">
+            <div class="container-fluid">
+                <div class="row mb-2 align-items-center">
+                    <div class="col-sm-6">
+                        <h1 class="m-0"><span class="material-symbols-outlined align-middle mr-1">inventory_2</span> Gestión de Inventario</h1>
+                        <p class="text-muted mb-0 small">Control de stock, compras y movimientos con trazabilidad completa</p>
+                    </div>
+                    <div class="col-sm-6">
+                        <ol class="breadcrumb float-sm-right">
+                            <li class="breadcrumb-item"><a href="/dashboard">Inicio</a></li>
+                            <li class="breadcrumb-item active">Inventario</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="content px-3 pb-4">
+            <div id="inv-alerta" class="alert alert-danger d-none" role="alert"></div>
+
+            <div class="inv-kpi-grid" id="invKpiGrid">
+                <div class="inv-kpi-card"><div class="inv-kpi-icon purple"><span class="material-symbols-outlined">category</span></div><div><span class="inv-kpi-label">Total productos</span><span class="inv-kpi-value" id="kpiProductos">0</span></div></div>
+                <div class="inv-kpi-card"><div class="inv-kpi-icon blue"><span class="material-symbols-outlined">layers</span></div><div><span class="inv-kpi-label">Total presentaciones</span><span class="inv-kpi-value" id="kpiPresentaciones">0</span></div></div>
+                <div class="inv-kpi-card"><div class="inv-kpi-icon orange"><span class="material-symbols-outlined">warning</span></div><div><span class="inv-kpi-label">Stock bajo</span><span class="inv-kpi-value" id="kpiStockBajo">0</span></div></div>
+                <div class="inv-kpi-card"><div class="inv-kpi-icon red"><span class="material-symbols-outlined">block</span></div><div><span class="inv-kpi-label">Sin stock</span><span class="inv-kpi-value" id="kpiSinStock">0</span></div></div>
+                <div class="inv-kpi-card"><div class="inv-kpi-icon green"><span class="material-symbols-outlined">payments</span></div><div><span class="inv-kpi-label">Valor inventario</span><span class="inv-kpi-value" id="kpiValor">S/ 0.00</span></div></div>
+            </div>
+
+            <ul class="nav nav-tabs inv-nav-tabs" id="invTabs" role="tablist">
+                <li class="nav-item"><a class="nav-link active" id="tab-inventario-link" data-toggle="tab" href="#tabInventario" role="tab"><span class="material-symbols-outlined inv-icon-sm">inventory_2</span> Inventario</a></li>
+                <li class="nav-item"><a class="nav-link" id="tab-productos-link" data-toggle="tab" href="#tabProductos" role="tab"><span class="material-symbols-outlined inv-icon-sm">category</span> Gestión de Productos</a></li>
+                <li class="nav-item"><a class="nav-link" id="tab-ingreso-link" data-toggle="tab" href="#tabIngreso" role="tab"><span class="material-symbols-outlined inv-icon-sm">shopping_cart</span> Ingreso de Inventario</a></li>
+                <li class="nav-item"><a class="nav-link" id="tab-salidas-link" data-toggle="tab" href="#tabSalidas" role="tab"><span class="material-symbols-outlined inv-icon-sm">remove_circle</span> Salidas</a></li>
+                <li class="nav-item"><a class="nav-link" id="tab-ajustes-link" data-toggle="tab" href="#tabAjustes" role="tab"><span class="material-symbols-outlined inv-icon-sm">tune</span> Ajustes</a></li>
+                <li class="nav-item"><a class="nav-link" id="tab-kardex-link" data-toggle="tab" href="#tabKardex" role="tab"><span class="material-symbols-outlined inv-icon-sm">history</span> Kardex</a></li>
+            </ul>
+
+            <div class="tab-content inv-tab-content" id="invTabContent">
+                <!-- Tab Inventario -->
+                <div class="tab-pane fade show active" id="tabInventario" role="tabpanel">
+                    <div class="inv-toolbar">
+                        <button type="button" class="btn btn-sm btn-m3-filled" id="btnRegistrarCompra"><span class="material-symbols-outlined inv-icon-sm">shopping_cart</span> Registrar Compra</button>
+                        <button type="button" class="btn btn-sm btn-m3-tonal" id="btnIngresoManual"><span class="material-symbols-outlined inv-icon-sm">add_circle</span> Registrar Ingreso Manual</button>
+                        <button type="button" class="btn btn-sm btn-m3-tonal" id="btnSalida"><span class="material-symbols-outlined inv-icon-sm">remove_circle</span> Registrar Salida</button>
+                        <button type="button" class="btn btn-sm btn-m3-tonal" id="btnAjuste"><span class="material-symbols-outlined inv-icon-sm">tune</span> Ajuste de Inventario</button>
+                        <button type="button" class="btn btn-sm btn-m3-outlined" id="btnHistorial"><span class="material-symbols-outlined inv-icon-sm">history</span> Historial de Movimientos</button>
+                        <button type="button" class="btn btn-sm btn-m3-outlined" id="btnExportPdf"><span class="material-symbols-outlined inv-icon-sm">picture_as_pdf</span> Exportar PDF</button>
+                        <button type="button" class="btn btn-sm btn-m3-outlined" id="btnExportExcel"><span class="material-symbols-outlined inv-icon-sm">table_view</span> Exportar Excel</button>
+                        <span class="inv-loading d-none ml-2" id="invLoading"><span class="material-symbols-outlined">progress_activity</span> Actualizando...</span>
+                    </div>
+
+                    <div class="inv-filters">
+                        <div class="row">
+                            <div class="col-md-4 col-sm-6 form-group mb-2">
+                                <label class="small mb-1">Buscar</label>
+                                <input type="text" id="filtroBusqueda" class="form-control form-control-sm" placeholder="Producto, presentación, código..." />
+                            </div>
+                            <div class="col-md-3 col-sm-6 form-group mb-2">
+                                <label class="small mb-1">Categoría</label>
+                                <select id="filtroCategoria" class="form-control form-control-sm"><option value="">Todas</option></select>
+                            </div>
+                            <div class="col-md-3 col-sm-6 form-group mb-2">
+                                <label class="small mb-1">Estado de stock</label>
+                                <select id="filtroEstado" class="form-control form-control-sm">
+                                    <option value="">Todos</option>
+                                    <option value="normal">Normal</option>
+                                    <option value="bajo">Stock bajo</option>
+                                    <option value="agotado">Sin stock</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2 col-sm-6 form-group mb-2 d-flex align-items-end">
+                                <button type="button" class="btn btn-sm btn-m3-filled w-100" id="btnAplicarFiltros">Filtrar</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card inv-table-card">
+                        <div class="card-header py-2">
+                            <h3 class="card-title mb-0"><span class="material-symbols-outlined inv-icon-sm mr-1">table_rows</span> Inventario por presentación</h3>
+                        </div>
+                        <div class="card-body p-0">
+                            <table id="tablaInventario" class="table table-striped table-bordered table-hover w-100 mb-0">
+                                <thead class="thead-dark">
+                                    <tr>
+                                        <th>Imagen</th>
+                                        <th>Producto</th>
+                                        <th>Categoría</th>
+                                        <th>Presentación</th>
+                                        <th>Código</th>
+                                        <th>Stock</th>
+                                        <th>Mín.</th>
+                                        <th>P. Compra</th>
+                                        <th>P. Venta</th>
+                                        <th>Estado</th>
+                                        <th class="text-center">Kardex</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tablaInventarioBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab Gestión de Productos -->
+                <div class="tab-pane fade" id="tabProductos" role="tabpanel">
+                    <div class="card inv-table-card">
+                        <div class="card-header py-2">
+                            <h3 class="card-title mb-0"><span class="material-symbols-outlined inv-icon-sm mr-1">category</span> Productos registrados</h3>
+                        </div>
+                        <div class="card-body p-0">
+                            <table id="tablaProductosGestion" class="table table-striped table-bordered table-hover w-100 mb-0">
+                                <thead class="thead-dark">
+                                    <tr>
+                                        <th>Imagen</th>
+                                        <th>Producto</th>
+                                        <th>Categoría</th>
+                                        <th class="text-center">Cant. presentaciones</th>
+                                        <th class="text-center">Stock total</th>
+                                        <th>Estado</th>
+                                        <th class="text-center">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tablaProductosGestionBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab Ingreso de Inventario -->
+                <div class="tab-pane fade" id="tabIngreso" role="tabpanel">
+                    <div class="card inv-form-card">
+                        <div class="card-header py-2">
+                            <h3 class="card-title mb-0"><span class="material-symbols-outlined inv-icon-sm mr-1">shopping_cart</span> Registrar ingreso por compra</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4 form-group">
+                                    <label>Proveedor</label>
+                                    <div class="input-group input-group-sm">
+                                        <select id="panelCompraProveedor" class="form-control"></select>
+                                        <div class="input-group-append"><button type="button" class="btn btn-outline-primary btn-sm" id="btnPanelNuevoProveedor" title="Nuevo proveedor">+</button></div>
+                                    </div>
+                                </div>
+                                <div class="col-md-2 form-group">
+                                    <label>Tipo documento</label>
+                                    <select id="panelCompraTipo" class="form-control form-control-sm inv-tipo-comprobante"></select>
+                                </div>
+                                <div class="col-md-2 form-group"><label>Serie</label><input type="text" id="panelCompraSerie" class="form-control form-control-sm" maxlength="10" /></div>
+                                <div class="col-md-2 form-group"><label>Número</label><input type="text" id="panelCompraNumero" class="form-control form-control-sm" required /></div>
+                                <div class="col-md-2 form-group"><label>Fecha</label><input type="date" id="panelCompraFecha" class="form-control form-control-sm" required /></div>
+                            </div>
+                            <div class="form-group"><label>Observaciones</label><textarea id="panelCompraObservaciones" class="form-control form-control-sm" rows="2"></textarea></div>
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h6 class="mb-0 font-weight-bold">Detalle de productos</h6>
+                                <button type="button" class="btn btn-sm btn-m3-tonal" id="btnPanelAgregarLinea"><span class="material-symbols-outlined inv-icon-sm">add</span> Agregar línea</button>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-sm table-bordered inv-detalle-compra-table mb-2">
+                                    <thead class="thead-light"><tr><th>Presentación</th><th>Cantidad</th><th>Precio compra</th><th>Subtotal</th><th></th></tr></thead>
+                                    <tbody id="panelCompraDetalleBody"></tbody>
+                                </table>
+                            </div>
+                            <div class="row justify-content-end">
+                                <div class="col-md-4">
+                                    <div class="d-flex justify-content-between"><span>Subtotal:</span><strong id="panelCompraSubtotal">S/ 0.00</strong></div>
+                                    <div class="d-flex justify-content-between align-items-center mt-1"><span>IGV:</span><input type="number" step="0.01" min="0" id="panelCompraIgv" class="form-control form-control-sm w-50 text-right" value="0" /></div>
+                                    <div class="d-flex justify-content-between mt-2 border-top pt-2"><span class="font-weight-bold">Total:</span><strong id="panelCompraTotal" class="text-primary">S/ 0.00</strong></div>
+                                </div>
+                            </div>
+                            <div class="text-right mt-3">
+                                <button type="button" class="btn btn-primary" id="btnPanelGuardarCompra"><span class="material-symbols-outlined inv-icon-sm">save</span> Guardar ingreso</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab Salidas -->
+                <div class="tab-pane fade" id="tabSalidas" role="tabpanel">
+                    <div class="card inv-form-card">
+                        <div class="card-header py-2">
+                            <h3 class="card-title mb-0"><span class="material-symbols-outlined inv-icon-sm">remove_circle</span> Registrar salida de inventario</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-3 form-group"><label>Fecha</label><input type="date" id="salidaFecha" class="form-control form-control-sm" readonly /></div>
+                                <div class="col-md-5 form-group"><label>Presentación</label><select id="salidaPresentacion" class="form-control form-control-sm"></select></div>
+                                <div class="col-md-2 form-group"><label>Cantidad</label><input type="number" min="1" id="salidaCantidad" class="form-control form-control-sm" value="1" /></div>
+                                <div class="col-md-4 form-group">
+                                    <label>Motivo</label>
+                                    <select id="salidaMotivo" class="form-control form-control-sm">
+                                        <option value="">Seleccione...</option>
+                                        <option value="Producto vencido">Producto vencido</option>
+                                        <option value="Producto dañado">Producto dañado</option>
+                                        <option value="Consumo interno">Consumo interno</option>
+                                        <option value="Donación">Donación</option>
+                                        <option value="Pérdida">Pérdida</option>
+                                        <option value="Otro">Otro</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-8 form-group"><label>Observación</label><textarea id="salidaObservacion" class="form-control form-control-sm" rows="2"></textarea></div>
+                            </div>
+                            <div class="text-right">
+                                <button type="button" class="btn btn-primary" id="btnPanelGuardarSalida"><span class="material-symbols-outlined inv-icon-sm">save</span> Registrar salida</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab Ajustes -->
+                <div class="tab-pane fade" id="tabAjustes" role="tabpanel">
+                    <div class="card inv-form-card">
+                        <div class="card-header py-2">
+                            <h3 class="card-title mb-0"><span class="material-symbols-outlined inv-icon-sm">tune</span> Ajuste de inventario</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-5 form-group"><label>Presentación</label><select id="ajustePresentacion" class="form-control form-control-sm"></select></div>
+                                <div class="col-md-2 form-group"><label>Stock actual</label><input type="number" id="ajusteStockActual" class="form-control form-control-sm bg-light" readonly /></div>
+                                <div class="col-md-2 form-group"><label>Stock físico</label><input type="number" min="0" id="ajusteStockFisico" class="form-control form-control-sm" /></div>
+                                <div class="col-md-3 form-group"><label>Diferencia</label><input type="number" id="ajusteDiferencia" class="form-control form-control-sm bg-light" readonly /></div>
+                                <div class="col-md-4 form-group">
+                                    <label>Motivo <span class="text-danger">*</span></label>
+                                    <input type="text" id="ajusteMotivo" class="form-control form-control-sm" placeholder="Ej: Conteo físico, error de registro..." required />
+                                </div>
+                                <div class="col-md-8 form-group"><label>Observación</label><textarea id="ajusteObservacion" class="form-control form-control-sm" rows="2"></textarea></div>
+                            </div>
+                            <div class="text-right">
+                                <button type="button" class="btn btn-primary" id="btnPanelGuardarAjuste"><span class="material-symbols-outlined inv-icon-sm">save</span> Guardar ajuste</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab Kardex -->
+                <div class="tab-pane fade" id="tabKardex" role="tabpanel">
+                    <div class="card inv-table-card">
+                        <div class="card-header py-2 d-flex justify-content-between align-items-center">
+                            <h3 class="card-title mb-0"><span class="material-symbols-outlined inv-icon-sm mr-1">history</span> Kardex general</h3>
+                            <button type="button" class="btn btn-sm btn-m3-outlined" id="btnRefrescarKardex"><span class="material-symbols-outlined inv-icon-sm">refresh</span> Actualizar</button>
+                        </div>
+                        <div class="card-body p-0">
+                            <table id="tablaKardexGlobal" class="table table-striped table-bordered table-hover table-sm w-100 mb-0">
+                                <thead class="thead-dark">
+                                    <tr>
+                                        <th>Fecha</th>
+                                        <th>Hora</th>
+                                        <th>Producto</th>
+                                        <th>Presentación</th>
+                                        <th>Tipo</th>
+                                        <th>Documento</th>
+                                        <th class="text-center">Entrada</th>
+                                        <th class="text-center">Salida</th>
+                                        <th class="text-center">Stock ant.</th>
+                                        <th class="text-center">Stock act.</th>
+                                        <th>Usuario</th>
+                                        <th>Observación</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tablaKardexGlobalBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <div th:replace="~{layout :: footer}"></div>
+</div>
+
+<!-- Modal Registrar Compra -->
+<div class="modal fade modal-erp" id="modalCompra" tabindex="-1">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title"><span class="material-symbols-outlined mr-1">shopping_cart</span> Registrar Compra</h5>
+                <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-4 form-group">
+                        <label>Proveedor</label>
+                        <div class="input-group input-group-sm">
+                            <select id="compraProveedor" class="form-control"></select>
+                            <div class="input-group-append"><button type="button" class="btn btn-outline-primary btn-sm" id="btnNuevoProveedor" title="Nuevo proveedor">+</button></div>
+                        </div>
+                    </div>
+                    <div class="col-md-2 form-group"><label>Tipo comprobante</label><select id="compraTipo" class="form-control form-control-sm inv-tipo-comprobante"></select></div>
+                    <div class="col-md-2 form-group"><label>Serie</label><input type="text" id="compraSerie" class="form-control form-control-sm" maxlength="10" /></div>
+                    <div class="col-md-2 form-group"><label>Número</label><input type="text" id="compraNumero" class="form-control form-control-sm" required /></div>
+                    <div class="col-md-2 form-group"><label>Fecha emisión</label><input type="date" id="compraFecha" class="form-control form-control-sm" required /></div>
+                </div>
+                <div class="form-group"><label>Observaciones</label><textarea id="compraObservaciones" class="form-control form-control-sm" rows="2"></textarea></div>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h6 class="mb-0 font-weight-bold">Productos comprados</h6>
+                    <button type="button" class="btn btn-sm btn-m3-tonal" id="btnAgregarLineaCompra"><span class="material-symbols-outlined inv-icon-sm">add</span> Agregar línea</button>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-sm table-bordered inv-detalle-compra-table mb-2">
+                        <thead class="thead-light"><tr><th>Presentación</th><th>Cantidad</th><th>Precio compra</th><th>Subtotal</th><th></th></tr></thead>
+                        <tbody id="compraDetalleBody"></tbody>
+                    </table>
+                </div>
+                <div class="row justify-content-end">
+                    <div class="col-md-4">
+                        <div class="d-flex justify-content-between"><span>Subtotal:</span><strong id="compraSubtotal">S/ 0.00</strong></div>
+                        <div class="d-flex justify-content-between align-items-center mt-1"><span>IGV:</span><input type="number" step="0.01" min="0" id="compraIgv" class="form-control form-control-sm w-50 text-right" value="0" /></div>
+                        <div class="d-flex justify-content-between mt-2 border-top pt-2"><span class="font-weight-bold">Total:</span><strong id="compraTotal" class="text-primary">S/ 0.00</strong></div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="btnGuardarCompra"><span class="material-symbols-outlined inv-icon-sm">save</span> Guardar compra</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Movimiento simple (ingreso/salida/ajuste) -->
+<div class="modal fade modal-erp" id="modalMovimiento" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="modalMovimientoTitulo">Movimiento</h5>
+                <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="movTipo" />
+                <div class="form-group"><label>Presentación</label><select id="movPresentacion" class="form-control form-control-sm"></select></div>
+                <div class="form-group" id="grpCantidad"><label>Cantidad</label><input type="number" min="1" id="movCantidad" class="form-control form-control-sm" /></div>
+                <div class="form-group d-none" id="grpStockActual"><label>Stock actual</label><input type="number" id="movStockActual" class="form-control form-control-sm bg-light" readonly /></div>
+                <div class="form-group d-none" id="grpStockNuevo"><label>Stock físico</label><input type="number" min="0" id="movStockNuevo" class="form-control form-control-sm" /></div>
+                <div class="form-group d-none" id="grpDiferencia"><label>Diferencia</label><input type="number" id="movDiferencia" class="form-control form-control-sm bg-light" readonly /></div>
+                <div class="form-group d-none" id="grpMotivoSalida">
+                    <label>Motivo</label>
+                    <select id="movMotivoSalida" class="form-control form-control-sm">
+                        <option value="">Seleccione...</option>
+                        <option value="Producto vencido">Producto vencido</option>
+                        <option value="Producto dañado">Producto dañado</option>
+                        <option value="Consumo interno">Consumo interno</option>
+                        <option value="Donación">Donación</option>
+                        <option value="Pérdida">Pérdida</option>
+                        <option value="Otro">Otro</option>
+                    </select>
+                </div>
+                <div class="form-group d-none" id="grpMotivoAjuste"><label>Motivo <span class="text-danger">*</span></label><input type="text" id="movMotivoAjuste" class="form-control form-control-sm" /></div>
+                <div class="form-group"><label>Observación</label><textarea id="movObservacion" class="form-control form-control-sm" rows="2"></textarea></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="btnGuardarMovimiento">Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Historial general -->
+<div class="modal fade modal-erp" id="modalHistorial" tabindex="-1">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header"><h5 class="modal-title"><span class="material-symbols-outlined mr-1">history</span> Historial de Movimientos</h5><button type="button" class="close" data-dismiss="modal"><span>&times;</span></button></div>
+            <div class="modal-body p-0">
+                <table id="tablaHistorial" class="table table-striped table-bordered table-sm w-100 mb-0">
+                    <thead class="thead-dark"><tr><th>Fecha</th><th>Hora</th><th>Producto</th><th>Presentación</th><th>Tipo</th><th>Documento</th><th>Entrada</th><th>Salida</th><th>Stock ant.</th><th>Stock act.</th><th>Usuario</th><th>Observación</th></tr></thead>
+                    <tbody id="tablaHistorialBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Kardex presentación -->
+<div class="modal fade modal-erp" id="modalKardex" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title" id="kardexTitulo">Kardex</h5>
+                <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+            </div>
+            <div class="modal-body p-0">
+                <table class="table table-bordered table-sm mb-0">
+                    <thead class="thead-light"><tr><th>Fecha</th><th>Hora</th><th>Tipo</th><th>Documento</th><th>Entrada</th><th>Salida</th><th>Stock ant.</th><th>Stock act.</th><th>Usuario</th><th>Observación</th></tr></thead>
+                    <tbody id="kardexBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Nuevo Proveedor -->
+<div class="modal fade modal-erp" id="modalProveedor" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header"><h5 class="modal-title">Nuevo proveedor</h5><button type="button" class="close" data-dismiss="modal"><span>&times;</span></button></div>
+            <div class="modal-body">
+                <div class="form-group"><label>Nombre del proveedor *</label><input type="text" id="provNombre" class="form-control form-control-sm" required placeholder="Ej. Distribuidora Lima SAC" /></div>
+                <div class="form-group mb-0"><label>RUC <span class="text-muted font-weight-normal">(opcional)</span></label><input type="text" id="provDocumento" class="form-control form-control-sm" maxlength="11" placeholder="Solo si cuenta con RUC" /></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="btnGuardarProveedor">Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Presentaciones (productos module) -->
+<div class="modal fade modal-presentaciones" id="modalPresentaciones" tabindex="-1" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-white mb-0"><i class="fas fa-th-list mr-1"></i> Gestionar Presentaciones</h5>
+                <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+            </div>
+            <div class="modal-body">
+                <div class="pres-resumen-producto" id="pres-resumen-producto">
+                    <div class="pres-resumen-img" id="pres-resumen-img"><i class="fas fa-box-open"></i></div>
+                    <div class="pres-resumen-info">
+                        <h5 id="pres-prod-nombre">—</h5>
+                        <div class="pres-resumen-meta">
+                            <span><i class="fas fa-tag"></i><span id="pres-prod-categoria">—</span></span>
+                            <span><i class="fas fa-industry"></i><span id="pres-prod-marca">—</span></span>
+                            <span id="pres-prod-estado-wrap"></span>
+                        </div>
+                    </div>
+                    <div class="pres-resumen-stats">
+                        <div class="stat-item">Presentaciones: <strong id="pres-resumen-count">0</strong></div>
+                        <div class="stat-item">Stock total: <strong id="pres-resumen-stock">0</strong></div>
+                    </div>
+                </div>
+                <div class="pres-kpi-row">
+                    <div class="pres-kpi-card"><i class="fas fa-layer-group kpi-icon"></i><div class="kpi-label">Total presentaciones</div><div class="kpi-value" id="pres-kpi-total">0</div></div>
+                    <div class="pres-kpi-card"><i class="fas fa-cubes kpi-icon"></i><div class="kpi-label">Stock total</div><div class="kpi-value" id="pres-kpi-stock">0</div></div>
+                    <div class="pres-kpi-card"><i class="fas fa-coins kpi-icon"></i><div class="kpi-label">Valor inventario (costo)</div><div class="kpi-value" id="pres-kpi-valor">S/ 0.00</div></div>
+                </div>
+                <div class="pres-toolbar">
+                    <div class="pres-buscar-wrap">
+                        <i class="fas fa-search"></i>
+                        <input type="text" class="form-control form-control-sm" id="pres-buscar" placeholder="Buscar presentación por nombre, código..." autocomplete="off">
+                    </div>
+                    <button type="button" class="btn btn-sm btn-nueva-pres" id="btnNuevaPresentacion" data-toggle="tooltip" title="Agregar nueva presentación al producto"><i class="fas fa-plus-circle mr-1"></i> Nueva Presentación</button>
+                </div>
+                <div class="table-responsive tabla-presentaciones">
+                    <table class="table table-sm table-bordered table-hover mb-0 tabla-presentaciones-grid">
+                        <thead class="pres-tabla-thead">
+                            <tr>
+                                <th class="text-center" style="width:52px">Foto</th>
+                                <th>Nombre</th>
+                                <th class="text-center">Cant.</th>
+                                <th class="text-center">Unidad</th>
+                                <th class="text-center">P. Compra</th>
+                                <th class="text-center">P. Venta</th>
+                                <th class="text-center">Ganancia</th>
+                                <th class="text-center">Stock</th>
+                                <th class="text-center">Stock Mín.</th>
+                                <th class="text-center">Cód. barras</th>
+                                <th class="text-center">Estado</th>
+                                <th class="text-center" style="width:110px">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="pres-tabla-body"><tr><td colspan="12" class="text-center text-muted py-4">Cargando...</td></tr></tbody>
+                    </table>
+                </div>
+                <div id="pres-lista-msg" class="small text-danger mt-2" style="display:none;"></div>
+            </div>
+            <div class="modal-footer bg-white">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal"><i class="fas fa-times mr-1"></i> Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade modal-form-pres" id="modalFormPresentacion" tabindex="-1" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-white" id="tituloFormPresentacion"><i class="fas fa-plus-circle mr-1"></i> Nueva presentación</h5>
+                <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="pres-form-id">
+                <div class="pres-form-layout">
+                    <div class="pres-form-foto-box">
+                        <div class="pres-form-foto-preview" id="pres-form-foto-preview"><i class="fas fa-camera"></i></div>
+                        <small class="text-muted d-block">Foto de la presentación</small>
+                    </div>
+                    <div>
+                        <div class="form-group">
+                            <label>Nombre de la presentación <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="pres-form-nombre" maxlength="100" placeholder="Ej: Botella 500 ml, Paquete x6">
+                            <div class="invalid-feedback" id="err-pres-nombre"></div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4"><div class="form-group"><label>Cantidad</label><input type="number" class="form-control" id="pres-form-cantidad" min="0" step="any"></div></div>
+                            <div class="col-md-4"><div class="form-group"><label>Unidad de medida</label><select class="form-control" id="pres-form-unidad"><option value="">— Seleccione —</option><option value="Und">Und</option><option value="g">g</option><option value="kg">kg</option><option value="ml">ml</option><option value="L">L</option><option value="Paquete">Paquete</option><option value="Caja">Caja</option><option value="Bolsa">Bolsa</option><option value="Botella">Botella</option><option value="Lata">Lata</option></select></div></div>
+                            <div class="col-md-4"><div class="form-group" id="pres-form-codigo-wrap" style="display:none;"><label>Código de barras</label><input type="text" class="form-control bg-light" id="pres-form-codigo" readonly tabindex="-1"></div><div class="form-group mb-0" id="pres-form-codigo-hint"><label class="text-muted">Código de barras</label><p class="form-control-plaintext small text-muted mb-0"><i class="fas fa-barcode mr-1"></i>Se generará automáticamente</p></div></div>
+                        </div>
+                    </div>
+                </div>
+                <hr>
+                <div class="row">
+                    <div class="col-md-6"><div class="form-group"><label>Precio compra (S/)</label><div class="input-group"><div class="input-group-prepend"><span class="input-group-text">S/</span></div><input type="number" class="form-control" id="pres-form-precio-compra" step="0.01" min="0" value="0.00"></div></div></div>
+                    <div class="col-md-6"><div class="form-group"><label>Precio venta (S/)</label><div class="input-group"><div class="input-group-prepend"><span class="input-group-text">S/</span></div><input type="number" class="form-control" id="pres-form-precio" step="0.01" min="0"></div></div></div>
+                </div>
+                <div class="pres-form-ganancia-preview mb-3" id="pres-form-ganancia-preview"><i class="fas fa-chart-line mr-1"></i> Ganancia unitaria: <span id="pres-form-ganancia-val">S/ 0.00</span></div>
+                <div class="row">
+                    <div class="col-md-4"><div class="form-group"><label>Stock</label><input type="number" class="form-control" id="pres-form-stock" min="0" step="1" value="0"></div></div>
+                    <div class="col-md-4"><div class="form-group"><label>Stock mínimo</label><input type="number" class="form-control" id="pres-form-stock-min" min="0" step="1" value="0"></div></div>
+                    <div class="col-md-4"><div class="form-group mb-0"><label>Estado</label><select class="form-control" id="pres-form-estado"><option value="ACTIVO">Activo</option><option value="INACTIVO">Inactivo</option></select></div></div>
+                </div>
+                <div id="pres-form-msg" class="alert alert-danger small mt-3 mb-0" style="display:none;"></div>
+            </div>
+            <div class="modal-footer bg-white">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="btnGuardarPresentacion"><i class="fas fa-save mr-1"></i> Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade modal-erp" id="modalImagenesPresentacion" tabindex="-1" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-warning">
+                <h5 class="modal-title"><i class="fas fa-images mr-1"></i> Imágenes — <span id="pres-img-nombre"></span></h5>
+                <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label><i class="fas fa-image mr-1"></i> Agregar imágenes</label>
+                    <div class="custom-file">
+                        <input type="file" class="custom-file-input" id="pres-img-files" accept=".jpg,.jpeg,.png,image/jpeg,image/png" multiple />
+                        <label class="custom-file-label" for="pres-img-files">Seleccionar imágenes</label>
+                    </div>
+                    <div class="text-danger small mt-1" id="err-pres-img-files"></div>
+                </div>
+                <p class="font-weight-bold mb-2">Imágenes actuales:</p>
+                <div id="pres-galeria-existente" class="d-flex flex-wrap mb-3"></div>
+                <p class="font-weight-bold mb-2" id="pres-lbl-preview" style="display:none;">Vista previa:</p>
+                <div id="pres-galeria-preview" class="d-flex flex-wrap"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-primary" id="btnGuardarImagenesPresentacion"><i class="fas fa-save"></i> Guardar imágenes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="~{layout :: scripts}"></div>
+<link rel="stylesheet" href="/css/productos-presentaciones.css" />
+<script src="/js/productos-presentaciones.js"></script>
+<script src="/js/inventario.js"></script>
+</body>
+</html>

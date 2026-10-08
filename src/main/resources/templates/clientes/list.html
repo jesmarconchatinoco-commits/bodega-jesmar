@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{layout :: commonHead('Gestión Clientes')}"></head>
+
+<body class="hold-transition sidebar-mini layout-fixed">
+<div class="wrapper">
+    <div th:replace="~{layout :: header}"></div>
+    <div th:replace="~{layout :: sidebar}"></div>
+    <div class="content-wrapper">
+        <section class="content-header px-3 py-3">
+            <div class="container-fluid">
+                <div class="row mb-2 align-items-center">
+                    <div class="col-sm-6">
+                        <h1 class="m-0"><i class="fas fa-users mr-2"></i>Gestión Clientes</h1>
+                    </div>
+                    <div class="col-sm-6">
+                        <ol class="breadcrumb float-sm-right">
+                            <li class="breadcrumb-item"><a href="/dashboard">Inicio</a></li>
+                            <li class="breadcrumb-item active">Clientes</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="content px-3">
+            <div th:if="${success}" class="alert alert-success alert-dismissible fade show">
+                <i class="fas fa-check-circle mr-1"></i><span th:text="${success}"></span>
+                <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+            </div>
+            <div th:if="${error}" class="alert alert-danger alert-dismissible fade show">
+                <i class="fas fa-exclamation-circle mr-1"></i><span th:text="${error}"></span>
+                <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+            </div>
+
+            <div th:unless="${miapiConfigurado}" class="alert alert-warning">
+                <i class="fas fa-exclamation-triangle mr-1"></i>
+                <strong>ApiPeru no configurado.</strong> Copie su token desde
+                <a href="https://apiperu.dev/app/dashboard" target="_blank" rel="noopener">apiperu.dev/app/dashboard</a>
+                y péguelo en <code>app.validacion.api-token</code> dentro de <code>application.properties</code>, luego reinicie la app.
+                Mientras tanto, escriba el nombre del cliente manualmente.
+            </div>
+
+            <div class="card card-outline card-primary erp-page-card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3 class="card-title mb-0"><i class="fas fa-users mr-1"></i> Listado de Clientes</h3>
+                    <button type="button" class="btn btn-primary btn-sm btn-erp-nuevo" onclick="abrirModalCliente()"
+                        data-toggle="tooltip" title="Registrar nuevo cliente">
+                        <i class="fas fa-user-plus"></i> Nuevo Cliente
+                    </button>
+                </div>
+                <div class="card-body p-0 tabla-card-body">
+                    <table class="table table-striped table-bordered table-hover w-100 tabla-modulo mb-0">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Documento</th>
+                                <th>Teléfono</th>
+                                <th>Correo</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="cliente : ${clientes}">
+                                <td th:text="${cliente.nombre}"></td>
+                                <td th:text="${cliente.documento}"></td>
+                                <td th:text="${cliente.telefono != null ? cliente.telefono : '—'}"></td>
+                                <td th:text="${cliente.correo != null ? cliente.correo : '—'}"></td>
+                                <td>
+                                    <span th:if="${cliente.estado != null and cliente.estado.name() == 'ACTIVO'}"
+                                          class="badge badge-success">Activo</span>
+                                    <span th:unless="${cliente.estado != null and cliente.estado.name() == 'ACTIVO'}"
+                                          class="badge badge-secondary">Inactivo</span>
+                                </td>
+                                <td class="col-acciones text-center">
+                                    <div class="tabla-acciones-btns">
+                                    <button type="button" class="btn btn-sm btn-warning"
+                                            th:attr="data-id=${cliente.id},data-nombre=${cliente.nombre},data-documento=${cliente.documento},data-telefono=${cliente.telefono},data-correo=${cliente.correo},data-estado=${cliente.estado}"
+                                            onclick="editarCliente(this)">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <a th:href="@{/clientes/eliminar/{id}(id=${cliente.id})}"
+                                       class="btn btn-sm btn-danger"
+                                       onclick="return confirm('¿Eliminar este cliente de la bodega?')">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Modal Cliente -->
+    <div class="modal fade modal-erp" id="modalCliente" tabindex="-1" data-backdrop="static">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="modalClienteTitulo"><i class="fas fa-user-plus mr-2"></i>Nuevo Cliente</h5>
+                    <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+                </div>
+                <form id="formCliente" action="/clientes/guardar" method="post" enctype="multipart/form-data">
+                    <div class="modal-body">
+                        <div id="cliente-toast-area" class="mb-2"></div>
+                        <input type="hidden" name="id" id="cliente-id">
+
+                        <div class="row">
+                            <div class="col-md-6 form-group">
+                                <label>Documento (DNI / RUC)</label>
+                                <div class="input-group">
+                                    <input type="text" name="documento" id="cliente-documento" class="form-control"
+                                           maxlength="11" placeholder="DNI 8 dígitos o RUC 11 dígitos" required>
+                                    <div class="input-group-append">
+                                        <button type="button" id="cliente-btn-buscar" class="btn btn-outline-primary" onclick="buscarCliente()">
+                                            <i class="fas fa-search"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 form-group">
+                                <label>Nombre completo</label>
+                                <input type="text" name="nombre" id="cliente-nombre" class="form-control"
+                                       placeholder="Nombre o razón social (obligatorio si ApiPeru no está activo)" required>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 form-group">
+                                <label>Teléfono</label>
+                                <input type="text" name="telefono" id="cliente-telefono" class="form-control"
+                                       placeholder="Ej: 987654321">
+                            </div>
+                            <div class="col-md-6 form-group">
+                                <label>Correo</label>
+                                <input type="email" name="correo" id="cliente-correo" class="form-control"
+                                       placeholder="cliente@correo.com">
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 form-group">
+                                <label>Imagen (opcional)</label>
+                                <div class="custom-file">
+                                    <input type="file" class="custom-file-input" id="cliente-imagen" name="imagenFile"
+                                           accept=".jpg,.jpeg,.png,image/jpeg,image/png">
+                                    <label class="custom-file-label" for="cliente-imagen">Agregar imagen</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6 form-group">
+                                <label>Estado</label>
+                                <select name="estado" id="cliente-estado" class="form-control">
+                                    <option value="ACTIVO">Activo</option>
+                                    <option value="INACTIVO">Inactivo</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save mr-1"></i> Guardar Cliente
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div th:replace="~{layout :: footer}"></div>
+</div>
+    <script th:replace="~{layout :: scripts}"></script>
+
+    <script>
+        var clienteBusquedaTimer = null;
+        var apiPeruActivo = /*[[${miapiConfigurado}]]*/ false;
+
+        $(document).ready(function () {
+            $('#cliente-documento').on('keypress', function (e) {
+                if (e.which === 13) {
+                    e.preventDefault();
+                    buscarCliente();
+                }
+            });
+            $('#cliente-documento').on('input blur', function () {
+                var doc = normalizarDocumento($(this).val());
+                if (doc.length === 8 || doc.length === 11) {
+                    clearTimeout(clienteBusquedaTimer);
+                    clienteBusquedaTimer = setTimeout(function () {
+                        buscarClienteLocal(doc, true);
+                    }, $(this).is(':focus') ? 500 : 0);
+                }
+            });
+        });
+
+        function normalizarDocumento(doc) {
+            return (doc || '').replace(/\D/g, '').trim();
+        }
+
+        function documentoValido(doc) {
+            var limpio = normalizarDocumento(doc);
+            return limpio.length === 8 || limpio.length === 11;
+        }
+
+        function aplicarClienteFormulario(res) {
+            if (res.clienteId) {
+                $('#cliente-id').val(res.clienteId);
+            } else {
+                $('#cliente-id').val('');
+            }
+            $('#cliente-nombre').val(res.nombre || '');
+            $('#cliente-telefono').val(res.telefono || '');
+            $('#cliente-correo').val(res.correo || '');
+            if (res.estado) {
+                $('#cliente-estado').val(res.estado);
+            }
+        }
+
+        function buscarClienteLocal(doc, silencioso, callback) {
+            var documento = normalizarDocumento(doc || $('#cliente-documento').val());
+            if (!documentoValido(documento)) {
+                if (callback) callback(null);
+                return;
+            }
+
+            $.get('/clientes/api/local', { documento: documento })
+                .done(function (res) {
+                    if (res.success && res.found) {
+                        aplicarClienteFormulario(res);
+                        if (!silencioso) {
+                            mostrarToast(res.message, 'success');
+                        }
+                        if (callback) callback(res);
+                    } else if (callback) {
+                        callback(null);
+                    }
+                })
+                .fail(function () {
+                    if (callback) callback(null);
+                });
+        }
+
+        function mostrarToast(mensaje, tipo) {
+            var cls = tipo === 'success' ? 'alert-success' : 'alert-danger';
+            $('#cliente-toast-area').html('<div class="alert ' + cls + ' py-2 mb-0">' + mensaje + '</div>');
+            setTimeout(function () { $('#cliente-toast-area').html(''); }, 4000);
+        }
+
+        function resetImagenCliente() {
+            $('#cliente-imagen').val('');
+            $('#cliente-imagen').next('.custom-file-label').text('Agregar imagen');
+        }
+
+        function abrirModalCliente() {
+            $('#modalClienteTitulo').html('<i class="fas fa-user-plus mr-2"></i>Nuevo Cliente');
+            $('#cliente-id, #cliente-documento, #cliente-nombre, #cliente-telefono, #cliente-correo').val('');
+            $('#cliente-estado').val('ACTIVO');
+            resetImagenCliente();
+            $('#cliente-toast-area').html('');
+            $('#modalCliente').modal('show');
+        }
+
+        function editarCliente(btn) {
+            var $btn = $(btn);
+            $('#modalClienteTitulo').html('<i class="fas fa-user-edit mr-2"></i>Editar Cliente');
+            $('#cliente-id').val($btn.data('id'));
+            $('#cliente-documento').val($btn.data('documento'));
+            $('#cliente-nombre').val($btn.data('nombre'));
+            $('#cliente-telefono').val($btn.data('telefono') || '');
+            $('#cliente-correo').val($btn.data('correo') || '');
+            $('#cliente-estado').val($btn.data('estado') || 'ACTIVO');
+            resetImagenCliente();
+            $('#cliente-toast-area').html('');
+            $('#modalCliente').modal('show');
+        }
+
+        function buscarClienteEnApi(doc, $btn) {
+            mostrarToast(apiPeruActivo ? 'Consultando ApiPeru (cliente no está en bodega)...' : 'Cliente no registrado. Complete el nombre.', 'success');
+            $.ajax({
+                url: '/clientes/api/buscar',
+                method: 'GET',
+                data: { documento: doc },
+                dataType: 'json',
+                timeout: 30000
+            }).done(function (res) {
+                if (res.success) {
+                    aplicarClienteFormulario(res);
+                    mostrarToast(res.message, 'success');
+                } else {
+                    mostrarToast(res.message || 'No se encontró el documento.', 'error');
+                }
+            }).fail(function (xhr) {
+                var msg = 'Error al buscar el documento.';
+                if (xhr.responseJSON && xhr.responseJSON.message) {
+                    msg = xhr.responseJSON.message;
+                }
+                mostrarToast(msg, 'error');
+            }).always(function () {
+                if ($btn) {
+                    $btn.prop('disabled', false).html('<i class="fas fa-search"></i>');
+                }
+            });
+        }
+
+        function buscarCliente() {
+            var doc = normalizarDocumento($('#cliente-documento').val());
+            if (!documentoValido(doc)) {
+                mostrarToast('Ingrese un DNI (8 dígitos) o RUC (11 dígitos).', 'error');
+                return;
+            }
+            $('#cliente-documento').val(doc);
+
+            var $btn = $('#cliente-btn-buscar');
+            $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i>');
+            mostrarToast('Buscando en la bodega...', 'success');
+
+            buscarClienteLocal(doc, true, function (local) {
+                if (local && local.found) {
+                    mostrarToast(local.message, 'success');
+                    $btn.prop('disabled', false).html('<i class="fas fa-search"></i>');
+                    return;
+                }
+                buscarClienteEnApi(doc, $btn);
+            });
+        }
+    </script>
+</body>
+
+</html>

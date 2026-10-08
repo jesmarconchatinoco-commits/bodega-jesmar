@@ -1,0 +1,42 @@
+{
+  "groups": [
+    {
+      "name": "app",
+      "description": "Configuración personalizada de la aplicación Bodega Jesmar"
+    },
+    {
+      "name": "app.upload",
+      "description": "Configuración de almacenamiento de archivos"
+    },
+    {
+      "name": "app.validacion",
+      "description": "Configuración de validación de documentos"
+    }
+  ],
+  "properties": [
+    {
+      "name": "app.upload.dir",
+      "type": "java.lang.String",
+      "description": "Carpeta base de imágenes en resources. Subcarpetas: presentaciones, logo, slider, cliente, perfil, categoria, pedido",
+      "defaultValue": "src/main/resources/imagen"
+    },
+    {
+      "name": "app.validacion.habilitada",
+      "type": "java.lang.Boolean",
+      "description": "Activar consulta DNI/RUC con ApiPeru (requiere api-token)",
+      "defaultValue": false
+    },
+    {
+      "name": "app.validacion.api-url",
+      "type": "java.lang.String",
+      "description": "URL base de ApiPeru para validación de DNI/RUC",
+      "defaultValue": "https://apiperu.dev/api"
+    },
+    {
+      "name": "app.validacion.api-token",
+      "type": "java.lang.String",
+      "description": "Token Bearer de ApiPeru (obtenerlo en https://apiperu.dev/app/dashboard)"
+    }
+  ],
+  "hints": []
+}

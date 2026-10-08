@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<body>
+    <a th:fragment="sidebarLink(href)"
+       th:href="${href}"
+       th:classappend="${logoUrl != null} ? ' brand-link--with-logo' : ''"
+       class="brand-link text-decoration-none d-flex align-items-center">
+        <span th:if="${logoUrl != null}" class="brand-logo-wrap">
+            <img th:src="${logoUrl}" class="brand-logo-img" alt="Bodega Jesmar">
+        </span>
+        <i th:unless="${logoUrl != null}" class="fas fa-warehouse brand-icon" aria-hidden="true"></i>
+        <span class="brand-text font-weight-bold">Bodega <span class="brand-name-highlight">Jesmar</span></span>
+    </a>
+</body>
+
+</html>

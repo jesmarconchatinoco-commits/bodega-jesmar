@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{layout :: commonHead('Gestión de Perfiles')}"></head>
+
+<body class="hold-transition sidebar-mini layout-fixed">
+<div class="wrapper">
+    <div th:replace="~{layout :: header}"></div>
+    <div th:replace="~{layout :: sidebar}"></div>
+
+    <div class="content-wrapper">
+
+        <!-- ENCABEZADO -->
+        <div class="content-header">
+            <div class="container-fluid">
+                <div class="row mb-2">
+                    <div class="col-sm-6">
+                        <h1 class="m-0">Gestión de Perfiles</h1>
+                    </div>
+                    <div class="col-sm-6">
+                        <ol class="breadcrumb float-sm-right">
+                            <li class="breadcrumb-item"><a href="/dashboard">Inicio</a></li>
+                            <li class="breadcrumb-item active">Gestión de Perfiles</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <section class="content">
+            <div class="container-fluid">
+
+                <!-- MENSAJES FLASH -->
+                <div th:if="${success}" class="alert alert-success alert-dismissible fade show">
+                    <i class="fas fa-check-circle mr-1"></i>
+                    <span th:text="${success}"></span>
+                    <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+                </div>
+                <div th:if="${error}" class="alert alert-danger alert-dismissible fade show">
+                    <i class="fas fa-exclamation-circle mr-1"></i>
+                    <span th:text="${error}"></span>
+                    <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+                </div>
+
+                <!-- TABLA -->
+                <div class="card card-outline card-primary erp-page-card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h3 class="card-title mb-0">
+                            <i class="fas fa-id-badge mr-1"></i> Listado de Perfiles
+                        </h3>
+                        <button type="button" class="btn btn-primary btn-sm btn-erp-nuevo" onclick="abrirModalPerfil(null)"
+                            data-toggle="tooltip" title="Registrar nuevo perfil">
+                            <i class="fas fa-plus-circle"></i> Nuevo Perfil
+                        </button>
+                    </div>
+                    <div class="card-body p-0 tabla-card-body">
+                        <table class="table table-hover table-striped table-bordered mb-0 tabla-modulo">
+                            <thead class="thead-dark">
+                                <tr>
+                                    <th class="text-center" style="width:50px">ID</th>
+                                    <th>Nombre</th>
+                                    <th>Descripción</th>
+                                    <th class="text-center" style="width:90px">Estado</th>
+                                    <th class="text-center" style="width:140px">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="p : ${perfiles}">
+                                    <td class="text-center align-middle" th:text="${p.id}"></td>
+                                    <td class="align-middle">
+                                        <i class="fas fa-id-badge text-primary mr-1"></i>
+                                        <span th:text="${p.nombre}"></span>
+                                    </td>
+                                    <td class="align-middle"
+                                        th:text="${!#strings.isEmpty(p.descripcion) ? p.descripcion : '—'}">
+                                    </td>
+                                    <td class="text-center align-middle">
+                                        <span th:if="${p.estado.name() == 'ACTIVO'}"
+                                            class="badge badge-success">Activo</span>
+                                        <span th:if="${p.estado.name() == 'INACTIVO'}"
+                                            class="badge badge-danger">Inactivo</span>
+                                    </td>
+                                    <td class="col-acciones text-center align-middle">
+                                        <div class="tabla-acciones-btns">
+                                        <button type="button" class="btn btn-sm btn-secondary btn-permisos-perfil"
+                                            title="Gestionar permisos"
+                                            th:attr="data-id=${p.id}, data-nombre=${p.nombre}">
+                                            <i class="fas fa-shield-alt"></i>
+                                        </button>
+
+                                        <!-- BOTÓN EDITAR -->
+                                        <button type="button" class="btn btn-sm btn-warning btn-editar-perfil"
+                                            title="Editar"
+                                            th:attr="data-id=${p.id}">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+
+                                        <!-- BOTÓN ELIMINAR -->
+                                        <a th:if="${!(#strings.equalsIgnoreCase(p.nombre, 'admin') or #strings.equalsIgnoreCase(p.nombre, 'administrador') or (perfilActualId != null and p.id == perfilActualId))}"
+                                            th:href="@{/perfiles/eliminar/{id}(id=${p.id})}"
+                                            class="btn btn-sm btn-danger" title="Eliminar"
+                                            onclick="return confirm('¿Eliminar este rol de la bodega?')">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                        <button th:if="${#strings.equalsIgnoreCase(p.nombre, 'admin') or #strings.equalsIgnoreCase(p.nombre, 'administrador') or (perfilActualId != null and p.id == perfilActualId)}"
+                                                type="button" class="btn btn-sm btn-secondary" disabled
+                                                th:title="${#strings.equalsIgnoreCase(p.nombre, 'admin') or #strings.equalsIgnoreCase(p.nombre, 'administrador') ? 'Perfil protegido del sistema' : 'Perfil en uso en su sesión actual'}">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr th:if="${#lists.isEmpty(perfiles)}">
+                                    <td colspan="5" class="text-center text-muted py-4">
+                                        <i class="fas fa-inbox fa-2x mb-2 d-block"></i>
+                                        No hay perfiles registrados.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="card-footer text-muted text-sm">
+                        Total: <strong th:text="${#lists.size(perfiles)}"></strong> perfil(es)
+                    </div>
+                </div>
+
+            </div>
+        </section>
+    </div><!-- /.content-wrapper -->
+
+
+    <!-- ============================================================ -->
+    <!-- MODAL: NUEVO / EDITAR PERFIL                                  -->
+    <!-- ============================================================ -->
+    <div class="modal fade modal-erp" id="modalPerfil" tabindex="-1" role="dialog" aria-labelledby="tituloModalPerfil"
+        aria-hidden="true" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+            <div class="modal-content">
+
+                <div class="modal-header bg-primary">
+                    <h5 class="modal-title text-white" id="tituloModalPerfil">
+                        <i class="fas fa-plus mr-1"></i> Nuevo Perfil
+                    </h5>
+                    <button type="button" class="close text-white" data-dismiss="modal"
+                        onclick="limpiarPerfil()"><span>&times;</span></button>
+                </div>
+
+                <form id="formPerfil" th:action="@{/perfiles/guardar}" method="post" novalidate>
+                    <div class="modal-body">
+
+                        <input type="hidden" id="per-id" name="id" />
+
+                        <div class="row">
+                            <!-- Nombre -->
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Nombre <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="per-nombre" name="nombre"
+                                        placeholder="Ej: Vendedor, Almacenero, Cajero..." maxlength="80" autocomplete="off" />
+                                    <div class="invalid-feedback" id="err-per-nombre"></div>
+                                </div>
+                            </div>
+                            <!-- Estado -->
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Estado <span class="text-danger">*</span></label>
+                                    <select class="form-control" id="per-estado" name="estado">
+                                        <option value="">-- Seleccione --</option>
+                                        <option value="ACTIVO">ACTIVO</option>
+                                        <option value="INACTIVO">INACTIVO</option>
+                                    </select>
+                                    <div class="invalid-feedback" id="err-per-estado"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Descripción -->
+                        <div class="form-group">
+                            <label>Descripción</label>
+                            <textarea class="form-control" id="per-desc" name="descripcion" rows="2" maxlength="255"
+                                placeholder="Ej: Atiende ventas y consulta de stock en la bodega..."></textarea>
+                            <div class="invalid-feedback" id="err-per-desc"></div>
+                            <small class="form-text text-muted d-flex justify-content-between">
+                                <span>Opcional. Máx. 255 caracteres.</span>
+                                <span id="cnt-per-desc">0 / 255</span>
+                            </small>
+                        </div>
+
+                        <!-- Nota Administrador -->
+                        <div class="alert alert-info py-2 mb-0" id="nota-admin" style="display:none;">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            El perfil <strong>Administrador</strong> tendrá acceso completo al sistema.
+                            Gestiona sus módulos desde el botón
+                            <strong><i class="fas fa-shield-alt"></i> Permisos</strong>.
+                        </div>
+
+                    </div><!-- /.modal-body -->
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="limpiarPerfil()">
+                            <i class="fas fa-times"></i> Cancelar
+                        </button>
+                        <button type="button" class="btn btn-primary" onclick="validarPerfil()">
+                            <i class="fas fa-save"></i> Guardar
+                        </button>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+    <!-- FIN MODAL PERFIL -->
+
+
+    <!-- ============================================================ -->
+    <!-- MODAL: PERMISOS / MÓDULOS                                     -->
+    <!-- ============================================================ -->
+    <div class="modal fade modal-erp" id="modalPermisosPerfil" tabindex="-1" role="dialog" aria-labelledby="tituloModalPermisos"
+        aria-hidden="true" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+
+                <div class="modal-header bg-primary">
+                    <h5 class="modal-title text-white" id="tituloModalPermisos">
+                        <i class="fas fa-shield-alt mr-1"></i>
+                        Permisos para <span id="perm-nombre-perfil"></span>
+                    </h5>
+                    <button type="button" class="close text-white" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+
+                <form id="formPermisos" method="post" novalidate>
+                    <div class="modal-body">
+
+                        <!-- Campos ocultos -->
+                        <input type="hidden" id="perm-perfil-id" name="id" />
+                        <input type="hidden" id="perm-perfil-nombre-h" name="nombre" />
+                        <input type="hidden" id="perm-perfil-desc-h" name="descripcion" />
+                        <input type="hidden" id="perm-perfil-estado-h" name="estado" />
+
+                        <p class="text-muted mb-3">
+                            Seleccione las opciones a las que este perfil tendrá acceso:
+                        </p>
+
+                        <!-- Alerta Administrador -->
+                        <div class="alert alert-info py-2 mb-3" id="perm-nota-admin" style="display:none;">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            El perfil <strong>Administrador</strong> tiene acceso
+                            <strong>total</strong> al sistema. Todos los módulos están
+                            seleccionados automáticamente.
+                        </div>
+
+                        <!-- Lista de módulos -->
+                        <div class="list-group" id="perm-modulos-lista">
+                            <div th:each="modulo : ${modulos}"
+                                class="list-group-item list-group-item-action d-flex align-items-center py-2 px-3">
+                                <div class="custom-control custom-checkbox w-100">
+                                    <input type="checkbox" class="custom-control-input perm-check"
+                                        th:id="'perm-mod-' + ${modulo.id}" name="moduloIds" th:value="${modulo.id}" />
+                                    <label class="custom-control-label w-100" th:for="'perm-mod-' + ${modulo.id}">
+                                        <i class="fas fa-th-large text-primary mr-2"></i>
+                                        <span th:text="${modulo.nombre}"></span>
+                                    </label>
+                                </div>
+                            </div>
+                            <p th:if="${#lists.isEmpty(modulos)}" class="text-muted text-center py-3 mb-0">
+                                No hay módulos activos disponibles.
+                            </p>
+                        </div>
+
+                    </div><!-- /.modal-body -->
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                            <i class="fas fa-times"></i> Cancelar
+                        </button>
+                        <button type="button" class="btn btn-primary" onclick="guardarPermisos()">
+                            <i class="fas fa-save"></i> Guardar Permisos
+                        </button>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+    <!-- FIN MODAL PERMISOS -->
+    <div th:replace="~{layout :: footer}"></div>
+</div><!-- /.wrapper -->
+
+    <script th:replace="~{layout :: scripts}"></script>
+
+    <!-- Datos de perfiles para JS -->
+    <script th:inline="javascript">
+        const perfilesData = [(${perfilesJson})];
+    </script>
+
+    <script>
+        function esAdmin(nombre) {
+            if (!nombre) return false;
+            const n = nombre.trim().toLowerCase();
+            return n === 'administrador' || n === 'admin';
+        }
+
+        /* ═══════════════════════════════════════════
+           MODAL: NUEVO / EDITAR PERFIL
+        ═══════════════════════════════════════════ */
+        function abrirModalPerfil(p) {
+            limpiarPerfil();
+            const esNuevo = !p || !p.id;
+
+            $('#tituloModalPerfil').html(esNuevo
+                ? '<i class="fas fa-plus mr-1"></i> Nuevo Perfil'
+                : '<i class="fas fa-edit mr-1"></i> Editar Perfil');
+
+            if (!esNuevo) {
+                $('#per-id').val(p.id);
+                $('#per-nombre').val(p.nombre);
+                $('#per-desc').val(p.descripcion || '');
+                $('#per-estado').val(p.estado || '');
+                actualizarCntDesc();
+
+                if (esAdmin(p.nombre)) {
+                    $('#nota-admin').show();
+                }
+            }
+
+            $('#modalPerfil').modal('show');
+        }
+
+        function validarPerfil() {
+            let valido = true;
+            limpiarErrPerfil();
+
+            // Nombre
+            const nombre = $('#per-nombre').val().trim();
+            if (!nombre) {
+                errPer('per-nombre', 'err-per-nombre', 'Ingrese el nombre del rol en la bodega.');
+                valido = false;
+            } else if (nombre.length < 2) {
+                errPer('per-nombre', 'err-per-nombre', 'El nombre del rol debe tener al menos 2 caracteres.');
+                valido = false;
+            }
+
+            // Descripción
+            if ($('#per-desc').val().length > 255) {
+                errPer('per-desc', 'err-per-desc', 'La descripción del rol no puede superar los 255 caracteres.');
+                valido = false;
+            }
+
+            // Estado
+            if (!$('#per-estado').val()) {
+                errPer('per-estado', 'err-per-estado', 'Indique si el rol estará activo en la bodega.');
+                valido = false;
+            }
+
+            if (valido) $('#formPerfil').submit();
+        }
+
+        function errPer(campo, errId, msg) {
+            $('#' + campo).addClass('is-invalid');
+            $('#' + errId).text(msg);
+        }
+
+        function limpiarErrPerfil() {
+            ['per-nombre', 'per-desc', 'per-estado']
+                .forEach(id => $('#' + id).removeClass('is-invalid is-valid'));
+            ['err-per-nombre', 'err-per-desc', 'err-per-estado']
+                .forEach(id => $('#' + id).text(''));
+        }
+
+        function limpiarPerfil() {
+            limpiarErrPerfil();
+            $('#formPerfil')[0].reset();
+            $('#per-id').val('');
+            $('#nota-admin').hide();
+            $('#cnt-per-desc').text('0 / 255');
+        }
+
+        function actualizarCntDesc() {
+            const len = $('#per-desc').val().length;
+            $('#cnt-per-desc').text(len + ' / 255');
+            if (len > 255) {
+                $('#per-desc').addClass('is-invalid');
+                $('#err-per-desc').text('Máximo 255 caracteres.');
+            } else {
+                $('#per-desc').removeClass('is-invalid');
+                $('#err-per-desc').text('');
+            }
+        }
+
+        // Nota automática al escribir "administrador"
+        $('#per-nombre').on('input', function () {
+            $(this).removeClass('is-invalid');
+            $('#err-per-nombre').text('');
+            if (esAdmin($(this).val())) {
+                $('#nota-admin').show();
+            } else {
+                $('#nota-admin').hide();
+            }
+        });
+
+        $('#per-desc').on('input', actualizarCntDesc);
+        $('#per-estado').on('change', function () {
+            $(this).removeClass('is-invalid');
+            $('#err-per-estado').text('');
+        });
+
+        $('#modalPerfil').on('hidden.bs.modal', limpiarPerfil);
+
+
+        /* ═══════════════════════════════════════════
+           MODAL: PERMISOS
+        ═══════════════════════════════════════════ */
+        function abrirModalPermisos(perfilId, perfilNombre) {
+            // Limpiar estado anterior
+            $('.perm-check').prop('checked', false).prop('disabled', false);
+            $('#perm-nota-admin').hide();
+
+            // Rellenar campos ocultos
+            $('#perm-perfil-id').val(perfilId);
+            $('#perm-nombre-perfil').text(perfilNombre);
+
+            // Ajustar acción del formulario al endpoint de permisos
+            $('#formPermisos').attr('action', '/perfiles/permisos/' + perfilId);
+
+            // Buscar perfil en los datos del servidor
+            const perfil = perfilesData.find(p => p.id === perfilId);
+            if (perfil) {
+                $('#perm-perfil-nombre-h').val(perfil.nombre || '');
+                $('#perm-perfil-desc-h').val(perfil.descripcion || '');
+                $('#perm-perfil-estado-h').val(perfil.estado || '');
+
+                if (esAdmin(perfil.nombre)) {
+                    // Administrador: marcar todos y deshabilitar
+                    $('.perm-check').prop('checked', true).prop('disabled', true);
+                    $('#perm-nota-admin').show();
+                } else {
+                    // Otros: marcar solo los asignados
+                    if (perfil.modulos && perfil.modulos.length > 0) {
+                        perfil.modulos.forEach(function (m) {
+                            $('#perm-mod-' + m.id).prop('checked', true);
+                        });
+                    }
+                }
+            }
+
+            $('#modalPermisosPerfil').modal('show');
+        }
+
+        function guardarPermisos() {
+            const nombre = $('#perm-perfil-nombre-h').val().toLowerCase();
+            const checked = $('.perm-check:checked').length;
+
+            // Validar al menos 1 módulo (salvo Administrador, que los tiene todos)
+            if (!esAdmin(nombre) && checked === 0) {
+                // Si SweetAlert2 está disponible
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Sin módulos seleccionados',
+                        text: 'Seleccione al menos un módulo que este rol pueda usar en la bodega.',
+                        confirmButtonColor: '#3085d6'
+                    });
+                } else {
+                    alert('Seleccione al menos un módulo que este rol pueda usar en la bodega.');
+                }
+                return;
+            }
+
+            // Si es Administrador, habilitar los checks antes de enviar
+            // para que el navegador los incluya en el POST
+            if (esAdmin(nombre)) {
+                $('.perm-check').prop('disabled', false);
+            }
+
+            $('#formPermisos').submit();
+        }
+
+        // Limpiar al cerrar
+        $('#modalPermisosPerfil').on('hidden.bs.modal', function () {
+            $('.perm-check').prop('checked', false).prop('disabled', false);
+            $('#perm-nota-admin').hide();
+        });
+
+        // Botones de la tabla (evita errores Thymeleaf con listJoin y comillas)
+        $(document).on('click', '.btn-editar-perfil', function () {
+            const id = parseInt($(this).data('id'), 10);
+            const perfil = perfilesData.find(p => p.id === id);
+            if (perfil) {
+                abrirModalPerfil(perfil);
+            }
+        });
+
+        $(document).on('click', '.btn-permisos-perfil', function () {
+            const $btn = $(this);
+            abrirModalPermisos(parseInt($btn.data('id'), 10), $btn.data('nombre') || '');
+        });
+    </script>
+
+</body>
+
+</html>

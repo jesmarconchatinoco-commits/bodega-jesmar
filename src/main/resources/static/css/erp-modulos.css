@@ -1,0 +1,381 @@
+/* ===== Estilos ERP/POS globales — Bodega Jesmar ===== */
+/* Aplica a todos los módulos del panel administrativo */
+
+/* ─── Tarjetas de listado ─── */
+.content-wrapper .card.card-outline,
+.erp-page-card,
+.prod-page-card {
+    border: none;
+    border-radius: 14px;
+    box-shadow: 0 4px 24px rgba(88, 28, 135, 0.1);
+    overflow: hidden;
+}
+
+.pedidos-table-card,
+.erp-page-card.pedidos-table-card {
+    overflow: hidden;
+}
+
+.content-wrapper .card.card-outline > .card-header,
+.erp-page-card > .card-header,
+.prod-page-card > .card-header {
+    background: linear-gradient(135deg, #6d28d9 0%, #7c3aed 55%, #8b5cf6 100%);
+    border-bottom: none;
+    padding: 0.85rem 1.25rem;
+}
+
+.content-wrapper .card.card-outline.card-info > .card-header {
+    background: linear-gradient(135deg, #5b21b6 0%, #7c3aed 50%, #a78bfa 100%);
+}
+
+.content-wrapper .card.card-outline > .card-header .card-title,
+.erp-page-card > .card-header .card-title,
+.prod-page-card > .card-header .card-title {
+    color: #fff;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+}
+
+.content-wrapper .card.card-outline > .card-header .text-muted,
+.content-wrapper .card.card-outline > .card-header label.text-muted {
+    color: rgba(255, 255, 255, 0.85) !important;
+}
+
+.content-wrapper .card.card-outline > .card-footer {
+    background: #faf5ff;
+    border-top: 1px solid #ede9fe;
+    color: #6b7280;
+}
+
+/* Botones en cabecera de tarjeta */
+.content-wrapper .card.card-outline > .card-header .btn-primary.btn-sm,
+.content-wrapper .card.card-outline > .card-header .btn-erp-nuevo,
+.btn-erp-nuevo,
+.prod-page-card > .card-header .btn-nuevo-prod {
+    background: rgba(255, 255, 255, 0.18);
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    color: #fff;
+    font-weight: 600;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.content-wrapper .card.card-outline > .card-header .btn-primary.btn-sm:hover,
+.content-wrapper .card.card-outline > .card-header .btn-erp-nuevo:hover,
+.btn-erp-nuevo:hover,
+.prod-page-card > .card-header .btn-nuevo-prod:hover {
+    background: #fff;
+    color: #6d28d9;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.content-wrapper .card.card-outline > .card-header .btn-outline-primary.btn-sm,
+.content-wrapper .card.card-outline > .card-header .btn-outline-success.btn-sm {
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    color: #fff;
+    border-radius: 8px;
+    font-weight: 600;
+}
+
+.content-wrapper .card.card-outline > .card-header .btn-outline-primary.btn-sm:hover,
+.content-wrapper .card.card-outline > .card-header .btn-outline-success.btn-sm:hover {
+    background: #fff;
+    color: #6d28d9;
+}
+
+.content-wrapper .card.card-outline > .card-header .form-control-sm {
+    border-radius: 8px;
+    border-color: rgba(255, 255, 255, 0.45);
+}
+
+/* ─── Tablas de módulos ─── */
+.content-wrapper .tabla-modulo thead th,
+.tabla-erp thead th,
+.tabla-productos thead th {
+    background: #1e1b4b !important;
+    color: #e9d5ff !important;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    border-color: #312e81 !important;
+    vertical-align: middle;
+}
+
+.content-wrapper .tabla-modulo tbody tr,
+.tabla-erp tbody tr,
+.tabla-productos tbody tr {
+    transition: background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.content-wrapper .tabla-modulo tbody tr:hover,
+.tabla-erp tbody tr:hover,
+.tabla-productos tbody tr:hover,
+.content-wrapper .tabla-ventas tbody tr:hover,
+.content-wrapper .tabla-pedidos tbody tr:hover {
+    background-color: #faf5ff !important;
+    box-shadow: inset 3px 0 0 #7c3aed;
+}
+
+.erp-col-num,
+.prod-col-num {
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+}
+
+/* ─── Botones de acción en tablas ─── */
+.content-wrapper .tabla-acciones-btns .btn-sm,
+.content-wrapper .ventas-acciones-btns .btn-sm,
+.content-wrapper .pedido-acciones-btns .btn-sm,
+.prod-acciones-grupo .btn-accion-prod,
+.pres-acciones-grupo .btn-accion-pres {
+    min-width: 34px;
+    height: 34px;
+    padding: 0 0.45rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    border: none;
+    font-size: 0.82rem;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.content-wrapper .tabla-acciones-btns .btn-sm:hover,
+.content-wrapper .ventas-acciones-btns .btn-sm:hover,
+.content-wrapper .pedido-acciones-btns .btn-sm:hover,
+.prod-acciones-grupo .btn-accion-prod:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+.content-wrapper .tabla-acciones-btns .btn-info,
+.content-wrapper .tabla-acciones-btns .btn-warning,
+.content-wrapper .ventas-acciones-btns .btn-warning,
+.btn-accion-editar,
+.btn-accion-prod.btn-accion-editar {
+    background: linear-gradient(135deg, #0ea5e9, #0284c7) !important;
+    color: #fff !important;
+}
+
+.content-wrapper .tabla-acciones-btns .btn-secondary,
+.btn-accion-presentaciones,
+.btn-accion-prod.btn-accion-presentaciones {
+    background: linear-gradient(135deg, #7c3aed, #6d28d9) !important;
+    color: #fff !important;
+}
+
+.content-wrapper .tabla-acciones-btns .btn-danger,
+.content-wrapper .ventas-acciones-btns .btn-danger,
+.content-wrapper .pedido-acciones-btns .btn-danger,
+.btn-accion-eliminar,
+.btn-accion-prod.btn-accion-eliminar {
+    background: linear-gradient(135deg, #ef4444, #dc2626) !important;
+    color: #fff !important;
+}
+
+.content-wrapper .tabla-acciones-btns .btn-success,
+.content-wrapper .pedido-acciones-btns .btn-success {
+    background: linear-gradient(135deg, #059669, #047857) !important;
+    color: #fff !important;
+}
+
+.content-wrapper .tabla-acciones-btns .btn-primary,
+.content-wrapper .pedido-acciones-btns .btn-primary {
+    background: linear-gradient(135deg, #7c3aed, #6d28d9) !important;
+    color: #fff !important;
+}
+
+.content-wrapper .tabla-acciones-btns .btn-outline-info,
+.content-wrapper .tabla-acciones-btns .btn-outline-primary {
+    background: #ede9fe !important;
+    color: #6d28d9 !important;
+    border: 1px solid #c4b5fd !important;
+}
+
+/* ─── Modales estándar ─── */
+.wrapper .modal .modal-content {
+    border: none;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 16px 48px rgba(88, 28, 135, 0.18);
+}
+
+.wrapper .modal .modal-header.bg-primary,
+.modal-erp .modal-header,
+.modal-form-pres .modal-header {
+    background: linear-gradient(135deg, #6d28d9 0%, #7c3aed 50%, #8b5cf6 100%);
+    border-bottom: none;
+    padding: 0.9rem 1.25rem;
+}
+
+.wrapper .modal .modal-header.bg-secondary,
+.modal-presentaciones .modal-header {
+    background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 50%, #7c3aed 100%);
+    border-bottom: none;
+}
+
+.wrapper .modal .modal-header.bg-warning {
+    background: linear-gradient(135deg, #d97706 0%, #f59e0b 50%, #fbbf24 100%);
+    border-bottom: none;
+}
+
+.wrapper .modal .modal-header.bg-primary .modal-title,
+.wrapper .modal .modal-header.bg-secondary .modal-title,
+.modal-presentaciones .modal-header .modal-title,
+.modal-form-pres .modal-header .modal-title {
+    font-weight: 700;
+    letter-spacing: 0.02em;
+}
+
+.wrapper .modal .modal-body:not(.pos-modal-body):not(.bg-light) {
+    background: #f8f7fc;
+}
+
+.wrapper .modal .modal-footer {
+    background: #fff;
+    border-top: 1px solid #ede9fe;
+}
+
+.wrapper .modal .modal-footer .btn-primary {
+    background: linear-gradient(135deg, #7c3aed, #6d28d9) !important;
+    border: none !important;
+    font-weight: 600;
+    border-radius: 8px;
+}
+
+.wrapper .modal .modal-footer .btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(109, 40, 217, 0.35);
+}
+
+/* ─── KPI / small-box (pedidos, dashboard) ─── */
+.content-wrapper .small-box {
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(88, 28, 135, 0.12);
+    overflow: hidden;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.content-wrapper .small-box:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(88, 28, 135, 0.18);
+}
+
+.content-wrapper .small-box.bg-warning {
+    background: linear-gradient(135deg, #d97706, #f59e0b) !important;
+}
+
+.content-wrapper .small-box.bg-success {
+    background: linear-gradient(135deg, #059669, #10b981) !important;
+}
+
+.content-wrapper .small-box.bg-secondary {
+    background: linear-gradient(135deg, #4b5563, #6b7280) !important;
+}
+
+.content-wrapper .small-box.bg-info {
+    background: linear-gradient(135deg, #6d28d9, #8b5cf6) !important;
+}
+
+/* ─── Horarios: tarjetas anidadas ─── */
+#horariosContenedor .card {
+    border: 1px solid #ede9fe;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(109, 40, 217, 0.06);
+    overflow: hidden;
+}
+
+#horariosContenedor .card > .card-header {
+    background: #f5f3ff;
+    border-bottom: 1px solid #ede9fe;
+    font-weight: 600;
+    color: #5b21b6;
+}
+
+#horariosContenedor .card > .card-body .table thead th {
+    background: #faf5ff !important;
+    color: #6d28d9 !important;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    border-color: #ede9fe !important;
+}
+
+/* ─── Slider / logo cards body ─── */
+.content-wrapper .card.card-outline .card-body {
+    background: #fff;
+}
+
+.content-wrapper .card.card-outline .card-body .btn-primary,
+.content-wrapper .card.card-outline .card-body .btn-info {
+    border-radius: 8px;
+    font-weight: 600;
+}
+
+/* ─── Badges ERP ─── */
+.content-wrapper .badge-success,
+.wrapper .modal .badge-success {
+    background: #059669;
+}
+
+.content-wrapper .badge-danger,
+.wrapper .modal .badge-danger {
+    background: #dc2626;
+}
+
+.content-wrapper .badge-primary {
+    background: #7c3aed;
+}
+
+/* ─── Encabezado de página ─── */
+.content-header h1 {
+    color: #1e1b4b;
+    font-weight: 700;
+}
+
+.content-header h1 i {
+    color: #7c3aed;
+}
+
+/* ─── Alertas dentro de content ─── */
+.content-wrapper .alert {
+    border-radius: 10px;
+    border: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+/* ─── DataTables dentro de módulos ERP ─── */
+.content-wrapper div.dataTables_wrapper .dataTables_filter input:focus {
+    border-color: #7c3aed;
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15);
+}
+
+.content-wrapper .page-item.active .page-link {
+    background: #7c3aed;
+    border-color: #7c3aed;
+}
+
+@media (max-width: 768px) {
+    .content-wrapper .tabla-acciones-btns .btn-sm,
+    .prod-acciones-grupo .btn-accion-prod {
+        min-width: 32px;
+        height: 32px;
+    }
+
+    .erp-page-card > .card-header .card-title,
+    .prod-page-card > .card-header .card-title {
+        font-size: 1rem;
+    }
+
+    .modal-xl .form-group,
+    .modal-lg .form-group {
+        margin-bottom: 0.75rem;
+    }
+
+    .modal-xl .row > [class*="col-"],
+    .modal-lg .row > [class*="col-"] {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+}

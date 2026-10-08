@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Catálogo - Bodega Jesmar</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="/css/catalogo.css" />
+    <link rel="stylesheet" href="/css/catalogo-checkout.css" />
+    <link rel="stylesheet" href="/css/catalogo-cliente.css" />
+</head>
+
+<body class="catalogo-page">
+
+    <!-- Header -->
+    <header class="cat-header">
+        <div class="cat-header-inner">
+            <a href="/catalogo" class="cat-brand">
+                <span th:if="${logo != null}" class="cat-brand-logo-wrap">
+                    <img th:src="${logo.url}" alt="Bodega Jesmar">
+                </span>
+                <span th:unless="${logo != null}" class="cat-brand-icon" aria-hidden="true">
+                    <i class="fas fa-store"></i>
+                </span>
+                <span class="cat-brand-name">Bodega <strong>Jesmar</strong></span>
+                <span class="cat-nav-link">Catálogo</span>
+            </a>
+            <div class="cat-header-actions">
+                <button type="button" class="cat-icon-btn" id="btnAbrirCarrito" title="Ver carrito">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span class="cat-badge" id="cartBadge" style="display:none;">0</span>
+                </button>
+                <button type="button" class="cat-icon-btn" id="btnMiCuenta" title="Mi cuenta">
+                    <i class="fas fa-user"></i>
+                    <span class="cat-user-dot" id="catUserDot" style="display:none;" aria-hidden="true"></span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div id="catToast" class="position-fixed" style="top:84px;right:20px;z-index:1070;max-width:360px;"></div>
+
+    <!-- Hero Slider -->
+    <section class="cat-hero" th:if="${!#lists.isEmpty(sliders)}">
+        <div class="cat-hero-slider">
+            <div class="cat-hero-track" id="heroTrack">
+                <div class="cat-hero-slide" th:each="slider : ${sliders}">
+                    <img th:src="${slider.url}" alt="Promoción Jesmar Bodega">
+                </div>
+            </div>
+            <button type="button" class="cat-hero-arrow prev" id="heroPrev" aria-label="Anterior">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            <button type="button" class="cat-hero-arrow next" id="heroNext" aria-label="Siguiente">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+            <div class="cat-hero-dots">
+                <button type="button" class="cat-hero-dot"
+                        th:each="slider, stat : ${sliders}"
+                        th:classappend="${stat.first} ? ' active' : ''"
+                        th:attr="data-index=${stat.index}"
+                        aria-label="Ir a slide"></button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main -->
+    <main class="cat-main">
+        <!-- Filtros -->
+        <aside class="cat-filters">
+            <h3><i class="fas fa-filter me-1"></i> Filtros</h3>
+            <div class="cat-search-wrap">
+                <input type="text" id="filtroBusqueda" placeholder="Buscar producto...">
+                <button type="button" id="btnBuscarProducto"><i class="fas fa-search"></i></button>
+            </div>
+            <div class="cat-filter-group">
+                <label class="cat-filter-label" for="filtroCategoria">Categoría</label>
+                <select id="filtroCategoria" class="cat-filter-select">
+                    <option value="">Todas las categorías</option>
+                </select>
+            </div>
+            <div class="cat-filter-group">
+                <label class="cat-filter-label" for="filtroPresentacion">Presentación</label>
+                <select id="filtroPresentacion" class="cat-filter-select">
+                    <option value="">Todas las presentaciones</option>
+                </select>
+            </div>
+        </aside>
+
+        <!-- Productos -->
+        <section>
+            <div class="cat-products-header">
+                <span class="count" id="contadorProductos">Mostrando 0 presentaciones</span>
+                <div class="cat-sort">
+                    <label class="me-2 text-muted">Ordenar por:</label>
+                    <select id="filtroOrden">
+                        <option value="default">Por defecto</option>
+                        <option value="nombre">Nombre</option>
+                        <option value="precio-asc">Precio: menor a mayor</option>
+                        <option value="precio-desc">Precio: mayor a menor</option>
+                    </select>
+                </div>
+            </div>
+            <div class="cat-grid" id="gridProductos"></div>
+        </section>
+    </main>
+
+    <!-- Overlay carrito -->
+    <div class="cat-overlay" id="catOverlay"></div>
+
+    <!-- Panel carrito derecha -->
+    <aside class="cat-cart" id="catCart">
+        <div class="cat-cart-header">
+            <h2>Mi Carrito</h2>
+            <button type="button" class="cat-cart-close" id="btnCerrarCarrito" aria-label="Cerrar">&times;</button>
+        </div>
+        <div class="cat-cart-items" id="cartItems">
+            <div class="cat-cart-empty">
+                <i class="fas fa-shopping-cart fa-2x mb-3 d-block"></i>
+                Tu carrito está vacío
+            </div>
+        </div>
+        <div class="cat-cart-footer">
+            <div class="cat-cart-total">
+                <span>Total:</span>
+                <strong id="cartTotal">S/ 0.00</strong>
+            </div>
+            <button type="button" class="cat-btn-primary" id="btnRealizarCompra" disabled>
+                <i class="fas fa-check-circle me-1"></i> Realizar compra
+            </button>
+            <button type="button" class="cat-btn-outline" id="btnVaciarCarrito">
+                <i class="fas fa-trash me-1"></i> Vaciar carrito
+            </button>
+        </div>
+    </aside>
+
+    <!-- Modal selección de presentación -->
+    <div class="modal fade" id="modalPresentacion" tabindex="-1" aria-labelledby="modalPresentacionLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalPresentacionLabel">
+                        <i class="fas fa-layer-group me-2"></i>Elegir presentación
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="small text-muted mb-2">Producto: <strong id="presSelProductoNombre">—</strong></p>
+                    <div id="presSelLista" class="cat-pres-list"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Proceso de Verificación del Pedido -->
+    <div class="modal fade cat-modal-verificacion" id="modalCheckout" tabindex="-1" aria-labelledby="modalCheckoutLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-scrollable modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalCheckoutLabel">
+                        <i class="fas fa-clipboard-check me-2"></i>Proceso de Verificación del Pedido
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <!-- Columna izquierda: verificación -->
+                        <div class="col-lg-7">
+                            <form id="formCheckout" onsubmit="return false;">
+                                <!-- Paso 1: Verificación DNI -->
+                                <div class="cat-verif-section">
+                                    <div class="cat-verif-section-title">
+                                        <i class="fas fa-id-card"></i> Verificación del cliente
+                                    </div>
+                                    <p class="small text-muted mb-2">Ingrese su DNI de 8 dígitos para validar su identidad.</p>
+                                    <div class="row g-2">
+                                        <div class="col-md-8">
+                                            <label class="form-label small fw-semibold">DNI *</label>
+                                            <div class="input-group cat-dni-group">
+                                                <input type="text" class="form-control" id="pedidoDocumento" maxlength="8"
+                                                       inputmode="numeric" pattern="[0-9]*" placeholder="12345678" autocomplete="off">
+                                                <button type="button" class="btn btn-buscar-dni" id="btnBuscarDni">
+                                                    <i class="fas fa-search me-1"></i> Buscar
+                                                </button>
+                                            </div>
+                                            <small id="pedidoDocumentoMsg" class="form-text text-muted"></small>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label small fw-semibold">Teléfono *</label>
+                                            <input type="tel" class="form-control" id="pedidoTelefono" maxlength="9"
+                                                   inputmode="numeric" placeholder="987654321">
+                                        </div>
+                                        <div class="col-12">
+                                            <label class="form-label small fw-semibold">Nombre completo</label>
+                                            <input type="text" class="form-control" id="pedidoNombre" readonly placeholder="Se completará al buscar DNI">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Paso 2: Forma de entrega -->
+                                <div class="cat-verif-section cat-section-hidden" id="sectionEntrega">
+                                    <div class="cat-verif-section-title">
+                                        <i class="fas fa-truck"></i> Forma de entrega
+                                    </div>
+                                    <div class="cat-option-cards">
+                                        <div class="cat-option-card" data-forma-entrega="ENVIO_DOMICILIO" role="button" tabindex="0">
+                                            <div class="cat-option-card-icon delivery">
+                                                <i class="fas fa-shipping-fast"></i>
+                                            </div>
+                                            <h6>Envío a domicilio</h6>
+                                            <p>Reciba su pedido en la puerta de su casa. Costo de envío aplicable.</p>
+                                        </div>
+                                        <div class="cat-option-card" data-forma-entrega="RECOJO_TIENDA" role="button" tabindex="0">
+                                            <div class="cat-option-card-icon store">
+                                                <i class="fas fa-store"></i>
+                                            </div>
+                                            <h6>Recojo en tienda</h6>
+                                            <p>Retire su pedido directamente en nuestra bodega sin costo adicional.</p>
+                                        </div>
+                                    </div>
+                                    <div class="cat-recojo-seleccionado" id="recojoSeleccionado">
+                                        <i class="fas fa-calendar-check me-2"></i>
+                                        <span id="recojoSeleccionadoTexto"></span>
+                                        <button type="button" class="btn btn-link btn-sm p-0 ms-2" id="btnCambiarRecojo">Cambiar</button>
+                                    </div>
+                                    <div class="cat-envio-fields" id="camposEnvio">
+                                        <div class="row g-2">
+                                            <div class="col-12">
+                                                <label class="form-label small fw-semibold">Dirección *</label>
+                                                <input type="text" class="form-control" id="pedidoDireccion" placeholder="Av. Principal 123">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label small fw-semibold">Referencia</label>
+                                                <input type="text" class="form-control" id="pedidoReferencia" placeholder="Cerca a...">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label small fw-semibold">Distrito *</label>
+                                                <input type="text" class="form-control" id="pedidoDistrito" placeholder="Ej: Lima">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Paso 3: Método de pago -->
+                                <div class="cat-verif-section cat-section-hidden" id="sectionPago">
+                                    <div class="cat-verif-section-title">
+                                        <i class="fas fa-wallet"></i> Método de pago
+                                    </div>
+                                    <div class="cat-option-cards">
+                                        <div class="cat-option-card" data-metodo-pago="YAPE" role="button" tabindex="0">
+                                            <img src="/img/yape-logo.svg" alt="Yape" class="cat-option-card-logo">
+                                            <h6>Yape</h6>
+                                            <p>Pague con Yape escaneando el código QR generado.</p>
+                                        </div>
+                                        <div class="cat-option-card" data-metodo-pago="PLIN" role="button" tabindex="0">
+                                            <img src="/img/plin-logo.svg" alt="Plin" class="cat-option-card-logo">
+                                            <h6>Plin</h6>
+                                            <p>Pague con Plin escaneando el código QR generado.</p>
+                                        </div>
+                                    </div>
+                                    <div class="cat-qr-box" id="qrPagoBox"></div>
+
+                                    <div class="mt-3">
+                                        <div class="cat-verif-section-title mb-2">
+                                            <i class="fas fa-receipt"></i> Comprobante de pago
+                                        </div>
+                                        <div class="cat-upload-zone" id="uploadComprobante">
+                                            <i class="fas fa-cloud-upload-alt fa-2x text-primary mb-2"></i>
+                                            <p class="mb-1 fw-semibold">Subir captura del comprobante</p>
+                                            <p class="small text-muted mb-0">JPG, JPEG o PNG · Clic o arrastre aquí</p>
+                                            <input type="file" id="inputComprobante" accept="image/jpeg,image/jpg,image/png">
+                                        </div>
+                                        <div class="cat-upload-preview" id="previewComprobante">
+                                            <p class="small text-muted mb-1">Vista previa:</p>
+                                            <img id="imgPreviewComprobante" alt="Vista previa del comprobante">
+                                        </div>
+                                        <div class="mt-3">
+                                            <label for="inputCodigoValidacion" class="form-label fw-semibold mb-1">
+                                                <i class="fas fa-key text-primary me-1"></i> Código de validación de pago
+                                            </label>
+                                            <input type="text" class="form-control" id="inputCodigoValidacion"
+                                                   maxlength="30" placeholder="Ej: 0001234567890"
+                                                   autocomplete="off" style="text-transform:uppercase;">
+                                            <p class="small text-muted mb-0 mt-1">
+                                                Ingrese el código de operación que aparece en su comprobante Yape o Plin.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- Columna derecha: resumen -->
+                        <div class="col-lg-5">
+                            <div class="cat-resumen-panel">
+                                <div class="cat-resumen-header">
+                                    <i class="fas fa-shopping-bag me-2"></i> Resumen del Pedido
+                                </div>
+                                <div class="cat-resumen-body">
+                                    <div class="table-responsive">
+                                        <table class="cat-resumen-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Producto</th>
+                                                    <th class="text-center">Cant.</th>
+                                                    <th class="text-end">P.U.</th>
+                                                    <th class="text-end">Subt.</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="resumenItems"></tbody>
+                                        </table>
+                                    </div>
+                                    <div class="cat-resumen-totals">
+                                        <div class="row-line">
+                                            <span>Subtotal</span>
+                                            <span id="resumenSubtotal">S/ 0.00</span>
+                                        </div>
+                                        <div class="row-line" id="resumenEnvioRow" style="display:none;">
+                                            <span>Costo de envío</span>
+                                            <span id="resumenEnvio">S/ 0.00</span>
+                                        </div>
+                                        <div class="row-line total">
+                                            <span>Total a pagar</span>
+                                            <span id="resumenTotal">S/ 0.00</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="btnConfirmarPedido" disabled>
+                        <i class="fas fa-paper-plane me-1"></i> Confirmar pedido
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Seleccionar Fecha y Hora de Recojo -->
+    <div class="modal fade cat-modal-recojo" id="modalRecojoHorario" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-calendar-alt me-2"></i>Seleccionar Fecha y Hora de Recojo</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="small text-muted mb-3">Elija cuándo desea recoger su pedido en tienda. Solo se muestran horarios con cupos disponibles.</p>
+                    <div id="recojoHorarioContenido"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="btnConfirmarRecojo" disabled>
+                        <i class="fas fa-check me-1"></i> Confirmar horario
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Mi cuenta (cliente) -->
+    <div class="modal fade" id="modalMiCuenta" tabindex="-1" aria-labelledby="modalMiCuentaLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content cat-cliente-modal">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title" id="modalMiCuentaLabel">
+                        <i class="fas fa-user-circle me-2 text-primary"></i>Mi cuenta
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body pt-2">
+                    <div id="panelClienteSesion" style="display:none;">
+                        <div class="cat-cliente-perfil mb-3">
+                            <p class="mb-1"><strong id="sesionClienteNombre">—</strong></p>
+                            <p class="small text-muted mb-0">DNI: <span id="sesionClienteDni">—</span></p>
+                            <p class="small text-muted mb-0">Teléfono: <span id="sesionClienteTelefono">—</span></p>
+                        </div>
+                        <p class="small text-muted">Al comprar, sus datos se completarán automáticamente en el pedido.</p>
+                        <div class="d-flex flex-wrap gap-2">
+                            <button type="button" class="btn btn-outline-primary btn-sm" id="btnEditarDatosCliente">
+                                <i class="fas fa-edit me-1"></i> Actualizar datos
+                            </button>
+                            <button type="button" class="btn btn-outline-danger btn-sm" id="btnCerrarSesionCliente">
+                                <i class="fas fa-sign-out-alt me-1"></i> Cerrar sesión
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="panelClienteAuth">
+                        <ul class="nav nav-tabs cat-cliente-tabs mb-3" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="tab-login" data-bs-toggle="tab"
+                                    data-bs-target="#paneLogin" type="button" role="tab">Iniciar sesión</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="tab-registro" data-bs-toggle="tab"
+                                    data-bs-target="#paneRegistro" type="button" role="tab">Registrarse</button>
+                            </li>
+                        </ul>
+                        <div class="tab-content">
+                            <div class="tab-pane fade show active" id="paneLogin" role="tabpanel">
+                                <p class="small text-muted">Ingrese su DNI para identificarse. Si aún no está registrado, use la pestaña Registrarse.</p>
+                                <form id="formLoginCliente" autocomplete="on">
+                                    <div class="mb-3">
+                                        <label for="loginDocumento" class="form-label">DNI</label>
+                                        <input type="text" class="form-control" id="loginDocumento" maxlength="8"
+                                            inputmode="numeric" pattern="[0-9]{8}" placeholder="12345678" required>
+                                    </div>
+                                    <div id="loginClienteMsg" class="small mb-2" style="display:none;"></div>
+                                    <button type="submit" class="btn btn-primary w-100" id="btnLoginCliente">
+                                        <i class="fas fa-sign-in-alt me-1"></i> Iniciar sesión
+                                    </button>
+                                </form>
+                            </div>
+                            <div class="tab-pane fade" id="paneRegistro" role="tabpanel">
+                                <p class="small text-muted">Regístrese con su DNI para agilizar sus compras futuras.</p>
+                                <form id="formRegistroCliente" autocomplete="on">
+                                    <div class="mb-3">
+                                        <label for="regDocumento" class="form-label">DNI</label>
+                                        <div class="input-group">
+                                            <input type="text" class="form-control" id="regDocumento" maxlength="8"
+                                                inputmode="numeric" pattern="[0-9]{8}" placeholder="12345678" required>
+                                            <button type="button" class="btn btn-outline-secondary" id="btnBuscarDniRegistro" title="Buscar DNI">
+                                                <i class="fas fa-search"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="regNombre" class="form-label">Nombre completo</label>
+                                        <input type="text" class="form-control" id="regNombre" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="regTelefono" class="form-label">Teléfono celular</label>
+                                        <input type="tel" class="form-control" id="regTelefono" maxlength="9"
+                                            inputmode="numeric" placeholder="9xxxxxxxx" required>
+                                    </div>
+                                    <div id="regClienteMsg" class="small mb-2" style="display:none;"></div>
+                                    <button type="submit" class="btn btn-primary w-100" id="btnRegistroCliente">
+                                        <i class="fas fa-user-plus me-1"></i> Registrarme
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0 justify-content-center">
+                    <a href="/login" class="small text-muted">¿Eres administrador? Ingresar al sistema</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script id="catalogo-data" type="application/json" th:utext="${catalogoJson}"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="/js/catalogo-horarios-recojo.js"></script>
+    <script src="/js/catalogo-checkout.js"></script>
+    <script src="/js/catalogo-cliente.js"></script>
+    <script src="/js/catalogo.js"></script>
+</body>
+
+</html>

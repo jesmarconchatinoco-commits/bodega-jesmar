@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<!-- Fragmento reutilizable: menú lateral según permisos del perfil -->
+<ul th:fragment="items" class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu">
+    <li th:each="modulo : ${menuModulos}" class="nav-item">
+        <a th:href="${modulo.ruta}" class="nav-link"
+            th:classappend="${moduloActivo == modulo.codigo ? ' active' : ''}"
+            th:attr="data-menu=${modulo.codigo}">
+            <i class="nav-icon" th:class="${modulo.icono}"></i>
+            <p th:text="${modulo.nombre}">Módulo</p>
+        </a>
+    </li>
+</ul>
+
+</html>

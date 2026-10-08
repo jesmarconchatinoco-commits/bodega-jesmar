@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="'Nota de venta ' + ${venta.numeroDocumento}">Nota de venta</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 20px auto; color: #222; }
+        h1 { font-size: 1.4rem; margin-bottom: 4px; }
+        .meta { color: #555; font-size: 0.9rem; margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background: #f5f5f5; }
+        .total { font-size: 1.2rem; font-weight: bold; text-align: right; margin-top: 16px; }
+        .no-print { margin-bottom: 16px; }
+        @media print { .no-print { display: none; } }
+    </style>
+</head>
+<body>
+    <div class="no-print">
+        <button onclick="window.print()">Imprimir / Guardar PDF</button>
+        <button onclick="window.close()">Cerrar</button>
+    </div>
+
+    <h1>Jesmar Bodega</h1>
+    <h2 th:text="${venta.numeroDocumento}">N001-00000001</h2>
+    <div class="meta">
+        <div><strong>Cliente:</strong> <span th:text="${venta.cliente != null ? venta.cliente.nombre : '—'}"></span></div>
+        <div th:if="${venta.cliente != null}"><strong>Documento:</strong> <span th:text="${venta.cliente.documento}"></span></div>
+        <div><strong>Fecha:</strong> <span th:text="${venta.fecha != null ? #temporals.format(venta.fecha, 'dd/MM/yyyy HH:mm') : '—'}"></span></div>
+        <div><strong>Vendedor:</strong> <span th:text="${venta.vendedor != null ? venta.vendedor.nombre : '—'}"></span></div>
+        <div><strong>Forma de pago:</strong> <span th:text="${venta.tipoPago != null ? venta.tipoPago.nombre : '—'}"></span></div>
+        <div><strong>Comprobante:</strong> <span th:text="${venta.tipoComprobante != null ? venta.tipoComprobante.nombre : '—'}"></span></div>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Cant.</th>
+                <th>Precio</th>
+                <th>Subtotal</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="d : ${venta.detalles}">
+                <td th:text="${d.producto != null ? d.producto.nombre : '—'}"></td>
+                <td th:text="${d.cantidad}"></td>
+                <td th:text="'S/ ' + ${#numbers.formatDecimal(d.precioUnitario, 1, 'COMMA', 2, 'POINT')}"></td>
+                <td th:text="'S/ ' + ${#numbers.formatDecimal(d.subtotal, 1, 'COMMA', 2, 'POINT')}"></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="total" th:text="'TOTAL: S/ ' + ${#numbers.formatDecimal(venta.total, 1, 'COMMA', 2, 'POINT')}"></div>
+    <div th:if="${venta.deuda != null and venta.deuda > 0}" style="text-align:right;color:#c00;">
+        Deuda pendiente: S/ <span th:text="${#numbers.formatDecimal(venta.deuda, 1, 'COMMA', 2, 'POINT')}"></span>
+    </div>
+</body>
+</html>

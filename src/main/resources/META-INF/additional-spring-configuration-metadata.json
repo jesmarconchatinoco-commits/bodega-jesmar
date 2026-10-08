@@ -1,0 +1,29 @@
+{
+  "groups": [
+    {
+      "name": "app.2fa",
+      "type": "com.test.desarrollo_web.config.TwoFactorProperties",
+      "description": "Configuración de autenticación en dos pasos (Spring Security 2FA)."
+    }
+  ],
+  "properties": [
+    {
+      "name": "app.2fa.habilitado",
+      "type": "java.lang.Boolean",
+      "description": "Activa o desactiva la verificación en dos pasos al iniciar sesión.",
+      "defaultValue": true
+    },
+    {
+      "name": "app.2fa.codigo-expiracion-minutos",
+      "type": "java.lang.Integer",
+      "description": "Minutos de validez del código OTP de verificación.",
+      "defaultValue": 5
+    },
+    {
+      "name": "app.2fa.mostrar-codigo-en-pantalla",
+      "type": "java.lang.Boolean",
+      "description": "Muestra el código en pantalla solo si no se pudo enviar por correo (solo desarrollo).",
+      "defaultValue": false
+    }
+  ]
+}

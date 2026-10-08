@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <th:block th:replace="~{layout :: commonHead('Gestión de Reportes')}" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <link rel="stylesheet" href="/css/reportes.css" />
+</head>
+
+<body class="hold-transition sidebar-mini layout-fixed reportes-page">
+<div class="wrapper">
+    <div th:replace="~{layout :: header}"></div>
+    <div th:replace="~{layout :: sidebar}"></div>
+
+    <div class="content-wrapper">
+        <section class="content-header px-3 py-3">
+            <div class="container-fluid">
+                <div class="row mb-2 align-items-center">
+                    <div class="col-sm-6">
+                        <h1 class="m-0"><i class="fas fa-chart-bar mr-2"></i>Gestión de Reportes</h1>
+                        <p class="text-muted mb-0 small">Estadísticas, análisis y exportación del negocio</p>
+                    </div>
+                    <div class="col-sm-6">
+                        <ol class="breadcrumb float-sm-right">
+                            <li class="breadcrumb-item"><a href="/dashboard">Inicio</a></li>
+                            <li class="breadcrumb-item active">Reportes</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="content px-3 pb-4">
+            <div id="reportes-alerta" class="alert alert-danger d-none" role="alert"></div>
+
+            <!-- KPIs -->
+            <div class="rep-kpi-grid" id="repKpiGrid">
+                <div class="rep-kpi-card" data-kpi="ventasDia">
+                    <div class="rep-kpi-icon green"><i class="fas fa-sun"></i></div>
+                    <div><span class="rep-kpi-label">Ventas del día</span><span class="rep-kpi-value">S/ 0.00</span></div>
+                </div>
+                <div class="rep-kpi-card" data-kpi="ventasMes">
+                    <div class="rep-kpi-icon blue"><i class="fas fa-calendar-alt"></i></div>
+                    <div><span class="rep-kpi-label">Ventas del mes</span><span class="rep-kpi-value">S/ 0.00</span></div>
+                </div>
+                <div class="rep-kpi-card" data-kpi="ingresosTotales">
+                    <div class="rep-kpi-icon purple"><i class="fas fa-coins"></i></div>
+                    <div><span class="rep-kpi-label">Ingresos totales</span><span class="rep-kpi-value">S/ 0.00</span></div>
+                </div>
+                <div class="rep-kpi-card" data-kpi="utilidad">
+                    <div class="rep-kpi-icon teal"><i class="fas fa-chart-line"></i></div>
+                    <div><span class="rep-kpi-label">Utilidad</span><span class="rep-kpi-value">S/ 0.00</span></div>
+                </div>
+                <div class="rep-kpi-card" data-kpi="cantidadVentas">
+                    <div class="rep-kpi-icon orange"><i class="fas fa-receipt"></i></div>
+                    <div><span class="rep-kpi-label">Ventas realizadas</span><span class="rep-kpi-value">0</span></div>
+                </div>
+                <div class="rep-kpi-card" data-kpi="productosVendidos">
+                    <div class="rep-kpi-icon indigo"><i class="fas fa-boxes"></i></div>
+                    <div><span class="rep-kpi-label">Productos vendidos</span><span class="rep-kpi-value">0</span></div>
+                </div>
+                <div class="rep-kpi-card" data-kpi="clientesAtendidos">
+                    <div class="rep-kpi-icon pink"><i class="fas fa-users"></i></div>
+                    <div><span class="rep-kpi-label">Clientes atendidos</span><span class="rep-kpi-value">0</span></div>
+                </div>
+                <div class="rep-kpi-card" data-kpi="ticketPromedio">
+                    <div class="rep-kpi-icon cyan"><i class="fas fa-ticket-alt"></i></div>
+                    <div><span class="rep-kpi-label">Ticket promedio</span><span class="rep-kpi-value">S/ 0.00</span></div>
+                </div>
+                <div class="rep-kpi-card rep-kpi-split" data-kpi="canal">
+                    <div class="rep-kpi-icon green"><i class="fas fa-store"></i></div>
+                    <div>
+                        <span class="rep-kpi-label">POS / Web</span>
+                        <span class="rep-kpi-value rep-kpi-canal">
+                            <span id="kpiPos">S/ 0</span> · <span id="kpiWeb">S/ 0</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filtros -->
+            <div class="card card-outline card-primary erp-page-card mb-3">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3 class="card-title mb-0"><i class="fas fa-filter mr-1"></i> Filtros avanzados</h3>
+                    <button type="button" class="btn btn-sm btn-outline-light" id="btnToggleFiltros">
+                        <i class="fas fa-chevron-up"></i>
+                    </button>
+                </div>
+                <div class="card-body" id="panelFiltros">
+                    <form id="formFiltrosReportes" autocomplete="off">
+                        <div class="row">
+                            <div class="col-md-3 col-sm-6 form-group">
+                                <label>Período</label>
+                                <select id="filtroPeriodo" class="form-control form-control-sm">
+                                    <option value="TODO" selected>Todo el historial</option>
+                                    <option value="DIA">Hoy</option>
+                                    <option value="SEMANA">Última semana</option>
+                                    <option value="MES">Este mes</option>
+                                    <option value="ANIO">Este año</option>
+                                    <option value="RANGO">Rango personalizado</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3 col-sm-6 form-group rango-fechas d-none">
+                                <label>Desde</label>
+                                <input type="date" id="filtroDesde" class="form-control form-control-sm" />
+                            </div>
+                            <div class="col-md-3 col-sm-6 form-group rango-fechas d-none">
+                                <label>Hasta</label>
+                                <input type="date" id="filtroHasta" class="form-control form-control-sm" />
+                            </div>
+                            <div class="col-md-3 col-sm-6 form-group">
+                                <label>Cliente</label>
+                                <select id="filtroCliente" class="form-control form-control-sm"><option value="">Todos</option></select>
+                            </div>
+                            <div class="col-md-3 col-sm-6 form-group">
+                                <label>Vendedor / Usuario</label>
+                                <select id="filtroVendedor" class="form-control form-control-sm"><option value="">Todos</option></select>
+                            </div>
+                            <div class="col-md-3 col-sm-6 form-group">
+                                <label>Categoría</label>
+                                <select id="filtroCategoria" class="form-control form-control-sm"><option value="">Todas</option></select>
+                            </div>
+                            <div class="col-md-3 col-sm-6 form-group">
+                                <label>Producto</label>
+                                <select id="filtroProducto" class="form-control form-control-sm"><option value="">Todos</option></select>
+                            </div>
+                            <div class="col-md-3 col-sm-6 form-group">
+                                <label>Marca</label>
+                                <input type="text" id="filtroMarca" class="form-control form-control-sm" placeholder="Buscar marca..." />
+                            </div>
+                            <div class="col-md-3 col-sm-6 form-group">
+                                <label>Método de pago</label>
+                                <select id="filtroTipoPago" class="form-control form-control-sm"><option value="">Todos</option></select>
+                            </div>
+                            <div class="col-md-3 col-sm-6 form-group">
+                                <label>Tipo comprobante</label>
+                                <select id="filtroTipoComprobante" class="form-control form-control-sm"><option value="">Todos</option></select>
+                            </div>
+                            <div class="col-md-3 col-sm-6 form-group">
+                                <label>Estado venta</label>
+                                <select id="filtroEstado" class="form-control form-control-sm"><option value="">Activas (sin anuladas)</option></select>
+                            </div>
+                            <div class="col-md-3 col-sm-6 form-group">
+                                <label>Canal</label>
+                                <select id="filtroCanal" class="form-control form-control-sm"><option value="">Todos</option></select>
+                            </div>
+                        </div>
+                        <div class="d-flex flex-wrap gap-2 mt-2">
+                            <button type="button" class="btn btn-primary btn-sm" id="btnAplicarFiltros">
+                                <i class="fas fa-sync-alt mr-1"></i> Aplicar filtros
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm" id="btnLimpiarFiltros">
+                                <i class="fas fa-eraser mr-1"></i> Limpiar
+                            </button>
+                            <span class="rep-loading ml-2 d-none" id="repLoading">
+                                <i class="fas fa-spinner fa-spin"></i> Actualizando...
+                            </span>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Menú lateral de reportes -->
+                <div class="col-lg-3 col-xl-2 mb-3">
+                    <div class="card rep-nav-card">
+                        <div class="card-header"><i class="fas fa-list mr-1"></i> Reportes</div>
+                        <nav class="rep-nav-list" id="repNavList">
+                            <a href="#" class="rep-nav-item active" data-tipo="GENERAL"><span class="material-symbols-outlined">analytics</span> General de Ventas</a>
+                            <a href="#" class="rep-nav-item" data-tipo="POS"><span class="material-symbols-outlined">point_of_sale</span> Ventas POS</a>
+                            <a href="#" class="rep-nav-item" data-tipo="WEB"><span class="material-symbols-outlined">shopping_bag</span> Ventas Web</a>
+                            <a href="#" class="rep-nav-item" data-tipo="HISTORIAL"><span class="material-symbols-outlined">history</span> Historial</a>
+                        </nav>
+                    </div>
+                </div>
+
+                <div class="col-lg-9 col-xl-10">
+                    <!-- Indicadores gerenciales -->
+                    <div class="card erp-page-card mb-3">
+                        <div class="card-header"><h3 class="card-title mb-0"><i class="fas fa-briefcase mr-1"></i> Indicadores gerenciales</h3></div>
+                        <div class="card-body py-3">
+                            <div class="row rep-gerencial-grid" id="repGerencialGrid">
+                                <div class="col-md-4 col-sm-6 rep-ger-item">
+                                    <span class="rep-ger-label">Crecimiento de ventas</span>
+                                    <span class="rep-ger-value" id="gerCrecimiento">0%</span>
+                                </div>
+                                <div class="col-md-4 col-sm-6 rep-ger-item">
+                                    <span class="rep-ger-label">Margen de utilidad</span>
+                                    <span class="rep-ger-value" id="gerMargen">0%</span>
+                                </div>
+                                <div class="col-md-4 col-sm-6 rep-ger-item">
+                                    <span class="rep-ger-label">Ventas canceladas</span>
+                                    <span class="rep-ger-value" id="gerCanceladas">0</span>
+                                </div>
+                                <div class="col-md-4 col-sm-6 rep-ger-item">
+                                    <span class="rep-ger-label">Devoluciones</span>
+                                    <span class="rep-ger-value" id="gerDevoluciones">0</span>
+                                </div>
+                                <div class="col-md-8 col-sm-12 rep-ger-item">
+                                    <span class="rep-ger-label">Productos con bajo stock</span>
+                                    <span class="rep-ger-value rep-ger-lista" id="gerStockBajo">—</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Gráficos -->
+                    <div class="card erp-page-card mb-3">
+                        <div class="card-header"><h3 class="card-title mb-0"><i class="fas fa-chart-area mr-1"></i> Dashboard analítico</h3></div>
+                        <div class="card-body">
+                            <div class="row rep-charts-grid">
+                                <div class="col-lg-6 mb-3">
+                                    <div class="rep-chart-box"><h6>Ventas por día</h6><canvas id="chartVentasDia" height="200"></canvas></div>
+                                </div>
+                                <div class="col-lg-6 mb-3">
+                                    <div class="rep-chart-box"><h6>Ventas por mes</h6><canvas id="chartVentasMes" height="200"></canvas></div>
+                                </div>
+                                <div class="col-lg-4 mb-3">
+                                    <div class="rep-chart-box"><h6>POS vs Web</h6><canvas id="chartComparativo" height="200"></canvas></div>
+                                </div>
+                                <div class="col-lg-4 mb-3">
+                                    <div class="rep-chart-box"><h6>Métodos de pago</h6><canvas id="chartMetodosPago" height="200"></canvas></div>
+                                </div>
+                                <div class="col-lg-4 mb-3">
+                                    <div class="rep-chart-box"><h6>Ventas por hora</h6><canvas id="chartVentasHora" height="200"></canvas></div>
+                                </div>
+                                <div class="col-lg-6 mb-3">
+                                    <div class="rep-chart-box"><h6>Productos más vendidos</h6><canvas id="chartTopProductos" height="200"></canvas></div>
+                                </div>
+                                <div class="col-lg-6 mb-3">
+                                    <div class="rep-chart-box"><h6>Categorías más vendidas</h6><canvas id="chartTopCategorias" height="200"></canvas></div>
+                                </div>
+                                <div class="col-lg-6 mb-3">
+                                    <div class="rep-chart-box"><h6>Mejores clientes</h6><canvas id="chartTopClientes" height="200"></canvas></div>
+                                </div>
+                                <div class="col-lg-6 mb-3">
+                                    <div class="rep-chart-box"><h6>Mejores vendedores</h6><canvas id="chartTopVendedores" height="200"></canvas></div>
+                                </div>
+                                <div class="col-12 mb-3">
+                                    <div class="rep-chart-box"><h6>Evolución de ingresos y utilidades</h6><canvas id="chartEvolucion" height="120"></canvas></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tabla del reporte -->
+                    <div class="card card-outline card-primary erp-page-card">
+                        <div class="card-header d-flex flex-wrap justify-content-between align-items-center">
+                            <h3 class="card-title mb-0" id="repTablaTitulo"><i class="fas fa-table mr-1"></i> Reporte</h3>
+                            <div class="rep-export-btns mt-2 mt-md-0" id="repExportBtns">
+                                <button type="button" class="btn btn-sm btn-m3-filled" id="btnExportPdf" title="Exportar PDF">
+                                    <span class="material-symbols-outlined rep-icon-sm">picture_as_pdf</span> PDF
+                                </button>
+                                <button type="button" class="btn btn-sm btn-m3-tonal" id="btnExportExcel" title="Exportar Excel">
+                                    <span class="material-symbols-outlined rep-icon-sm">table_view</span> Excel
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body p-0 tabla-card-body rep-table-scroll">
+                            <table id="tablaReporte" class="table table-striped table-bordered table-hover w-100 tabla-reportes mb-0">
+                                <thead class="thead-dark"><tr id="tablaReporteHead"></tr></thead>
+                                <tbody id="tablaReporteBody"></tbody>
+                            </table>
+                        </div>
+                        <div class="card-footer rep-resumen-panel" id="repResumenPanel">
+                            <h6 class="rep-resumen-titulo"><span class="material-symbols-outlined">summarize</span> Resumen del reporte</h6>
+                            <div class="row rep-resumen-grid">
+                                <div class="col-md-3 col-6"><span class="rep-res-label">Total ventas</span><span class="rep-res-value" id="resTotalVentas">0</span></div>
+                                <div class="col-md-3 col-6"><span class="rep-res-label">Comprobantes</span><span class="rep-res-value" id="resComprobantes">0</span></div>
+                                <div class="col-md-3 col-6"><span class="rep-res-label">Clientes atendidos</span><span class="rep-res-value" id="resClientes">0</span></div>
+                                <div class="col-md-3 col-6"><span class="rep-res-label">Total vendido</span><span class="rep-res-value" id="resVendido">S/ 0.00</span></div>
+                                <div class="col-md-3 col-6"><span class="rep-res-label">Descuentos</span><span class="rep-res-value" id="resDescuentos">S/ 0.00</span></div>
+                                <div class="col-md-3 col-6"><span class="rep-res-label">Impuestos (IGV)</span><span class="rep-res-value" id="resImpuestos">S/ 0.00</span></div>
+                                <div class="col-md-3 col-6"><span class="rep-res-label">Promedio por venta</span><span class="rep-res-value" id="resPromedio">S/ 0.00</span></div>
+                                <div class="col-md-3 col-6"><span class="rep-res-label">Rango consultado</span><span class="rep-res-value rep-res-rango" id="resRango">—</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <div th:replace="~{layout :: footer}"></div>
+</div>
+
+<!-- Modal detalle venta -->
+<div class="modal fade modal-erp" id="modalDetalleVenta" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title"><i class="fas fa-receipt mr-2"></i>Detalle de venta</h5>
+                <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+            </div>
+            <div class="modal-body" id="modalDetalleVentaBody">
+                <div class="text-center py-4"><i class="fas fa-spinner fa-spin"></i> Cargando...</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="~{layout :: scripts}"></div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="/js/reportes.js"></script>
+</body>
+</html>

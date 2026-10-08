@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Dashboard - Jesmar Bodega</title>
+
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2.0/dist/css/adminlte.min.css" />
+    <link rel="stylesheet" href="/css/layout.css" />
+    <link rel="stylesheet" href="/css/components.css" />
+    <link rel="stylesheet" href="/css/responsive.css" />
+
+    <style>
+        :root {
+            --accent-blue: #667eea;
+            --card-green: #10b981;
+            --card-blue: #38bdf8;
+            --card-orange: #f59e0b;
+            --card-red: #ef4444;
+        }
+
+        body {
+            font-family: 'Source Sans Pro', 'Segoe UI', sans-serif;
+            background: var(--jesmar-bg, #f4f6fb);
+        }
+
+        .user-name {
+            color: #374151;
+            font-weight: 600;
+            margin-left: 8px;
+            font-size: 1rem;
+        }
+
+        /* ===== TÍTULO ===== */
+        .page-title-dash {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 1.25rem;
+        }
+
+        /* ===== TARJETAS RESUMEN ===== */
+        .stat-card {
+            border-radius: 8px;
+            border: none;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+            transition: transform 0.2s, box-shadow 0.2s;
+            overflow: hidden;
+            height: 100%;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-card .card-body {
+            padding: 1.1rem 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            flex-shrink: 0;
+        }
+
+        .stat-icon.green { background: rgba(16, 185, 129, 0.15); color: var(--card-green); }
+        .stat-icon.blue  { background: rgba(56, 189, 248, 0.15); color: var(--card-blue); }
+        .stat-icon.orange{ background: rgba(245, 158, 11, 0.15); color: var(--card-orange); }
+        .stat-icon.red   { background: rgba(239, 68, 68, 0.15);  color: var(--card-red); }
+
+        .stat-label {
+            font-size: 0.82rem;
+            color: #6b7280;
+            margin-bottom: 2px;
+        }
+
+        .stat-value {
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: #111827;
+            line-height: 1.2;
+        }
+
+        .stat-card-link {
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+
+        .stat-card-link:hover {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .dash-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .dash-stats-grid .stat-card-item {
+            min-width: 0;
+        }
+
+        @media (max-width: 991.98px) {
+            .dash-stats-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 575.98px) {
+            .dash-stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .dash-subtitle {
+            color: #6b7280;
+            font-size: 0.9rem;
+            margin-top: -0.75rem;
+            margin-bottom: 1.25rem;
+        }
+
+        /* ===== TABLAS ===== */
+        .dash-table-card {
+            border: none;
+            border-radius: 8px;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+            height: 100%;
+        }
+
+        .dash-table-card .card-header {
+            background: #fff;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 14px 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .dash-table-card .card-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #111827;
+            margin: 0;
+        }
+
+        .dash-table-card .table {
+            margin-bottom: 0;
+            font-size: 0.88rem;
+        }
+
+        .dash-table-card .table thead th {
+            border-top: none;
+            border-bottom: 2px solid #e5e7eb;
+            color: #6b7280;
+            font-weight: 600;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            white-space: nowrap;
+        }
+
+        .dash-table-card .table tbody tr {
+            transition: background 0.15s;
+        }
+
+        .dash-table-card .table tbody tr:hover {
+            background: #f9fafb;
+        }
+
+        .deuda-monto {
+            color: var(--card-red);
+            font-weight: 700;
+        }
+
+        .btn-whatsapp {
+            background: #25d366;
+            border: none;
+            color: #fff;
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s, transform 0.2s;
+        }
+
+        .btn-whatsapp:hover {
+            background: #1ebe57;
+            color: #fff;
+            transform: scale(1.08);
+        }
+
+        .btn-whatsapp:disabled {
+            background: #d1d5db;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Toggle switch */
+        .switch-label {
+            font-size: 0.82rem;
+            color: #6b7280;
+            margin-right: 8px;
+        }
+
+        .custom-switch .custom-control-label::before {
+            border-radius: 1rem;
+        }
+
+        .custom-switch .custom-control-input:checked ~ .custom-control-label::before {
+            background-color: var(--accent-blue);
+            border-color: var(--accent-blue);
+        }
+
+        .trophy-icon {
+            color: #f59e0b;
+            margin-right: 6px;
+        }
+
+        .empty-row td {
+            text-align: center;
+            color: #9ca3af;
+            padding: 2rem !important;
+        }
+
+        .badge-dias {
+            font-size: 0.78rem;
+            padding: 3px 8px;
+            border-radius: 12px;
+        }
+
+        .badge-dias.ok { background: #d1fae5; color: #065f46; }
+        .badge-dias.warn { background: #fef3c7; color: #92400e; }
+        .badge-dias.danger { background: #fee2e2; color: #991b1b; }
+
+        .chart-card {
+            border: none;
+            border-radius: 8px;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+            height: 100%;
+        }
+
+        .chart-card .card-body {
+            height: 280px;
+            position: relative;
+        }
+
+        .chart-card-ganancias .card-body {
+            height: auto;
+            min-height: 340px;
+        }
+
+        .chart-ganancias-wrap {
+            position: relative;
+            height: 260px;
+            width: 100%;
+        }
+
+        .chart-ganancias-wrap .chart-empty {
+            position: absolute;
+            inset: 0;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .chart-ganancias-wrap canvas {
+            position: relative;
+            z-index: 0;
+        }
+
+        .chart-ganancias-loading {
+            position: absolute;
+            inset: 0;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.75);
+            z-index: 2;
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+
+        .chart-ganancias-loading.active {
+            display: flex;
+        }
+
+        .chart-empty {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #9ca3af;
+            font-size: 0.9rem;
+        }
+
+        .stat-sub {
+            font-size: 0.75rem;
+            color: #9ca3af;
+            margin-top: 2px;
+        }
+
+        .badge-estado {
+            font-size: 0.72rem;
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+
+        .badge-estado.completada { background: #d1fae5; color: #065f46; }
+        .badge-estado.pendiente { background: #fef3c7; color: #92400e; }
+        .badge-estado.anulado { background: #fee2e2; color: #991b1b; }
+
+        @media (max-width: 768px) {
+            .stat-value { font-size: 1.1rem; }
+        }
+    </style>
+</head>
+
+<body class="hold-transition sidebar-mini layout-fixed">
+    <div class="wrapper">
+
+        <!-- ===== SIDEBAR ===== -->
+        <aside class="main-sidebar sidebar-dark-primary elevation-4">
+            <a th:replace="~{fragments/brand :: sidebarLink('/dashboard')}"></a>
+            <div class="sidebar">
+                <nav class="mt-2">
+                    <ul th:replace="~{fragments/sidebar-menu :: items}"></ul>
+                </nav>
+            </div>
+        </aside>
+
+        <!-- ===== TOP BAR ===== -->
+        <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" data-widget="pushmenu" href="#" role="button">
+                        <i class="fas fa-bars"></i>
+                    </a>
+                </li>
+                <li class="nav-item d-none d-sm-inline-block ml-2">
+                    <span class="breadcrumb-dashboard">Inicio</span>
+                </li>
+            </ul>
+            <ul class="navbar-nav ml-auto align-items-center">
+                <li class="nav-item mr-3">
+                    <a href="/catalogo" target="_blank" class="btn-visitar" title="Visitar catálogo">
+                        <i class="fas fa-external-link-alt mr-1"></i><span class="btn-visitar-text">Visitar Página</span>
+                    </a>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link d-flex align-items-center" data-toggle="dropdown" href="#">
+                        <span class="user-avatar"
+                            th:text="${#strings.toUpperCase(#strings.substring(usuarioActual, 0, 1))}">U</span>
+                        <span class="user-name d-none d-md-inline" th:text="${usuarioActual}">admin</span>
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-right">
+                        <a href="/logout" class="dropdown-item">
+                            <i class="fas fa-sign-out-alt mr-2"></i> Cerrar sesión
+                        </a>
+                    </div>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- ===== CONTENIDO ===== -->
+        <div class="content-wrapper">
+            <section class="content pt-4 px-3">
+                <div class="container-fluid">
+
+                    <div th:if="${param.denegado}" class="alert alert-warning alert-dismissible fade show">
+                        <i class="fas fa-exclamation-triangle mr-1"></i>
+                        No tiene permiso para acceder a ese módulo.
+                        <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-1">
+                        <h1 class="page-title-dash mb-0">Dashboard</h1>
+                        <small class="text-muted" id="dashUltimaActualizacion">
+                            <i class="fas fa-sync-alt mr-1"></i>Datos en tiempo real
+                        </small>
+                    </div>
+                    <p class="dash-subtitle">Resumen interactivo con ventas, clientes, productos y pedidos del catálogo.</p>
+
+                    <!-- Tarjetas resumen -->
+                    <div class="dash-stats-grid">
+                        <div class="stat-card-item">
+                            <div class="card stat-card">
+                                <div class="card-body">
+                                    <div class="stat-icon green"><i class="fas fa-cash-register"></i></div>
+                                    <div>
+                                        <div class="stat-label">Ventas del Día</div>
+                                        <div class="stat-value" id="statVentasDia" data-animate th:attr="data-animate=${ventasDelDia}, data-moneda=true"
+                                            th:text="'S/ ' + ${#numbers.formatDecimal(ventasDelDia, 1, 'COMMA', 2, 'POINT')}">S/ 0.00</div>
+                                        <div class="stat-sub" th:text="${cantidadVentasHoy} + ' venta(s) hoy'">0 venta(s) hoy</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="stat-card-item">
+                            <div class="card stat-card">
+                                <div class="card-body">
+                                    <div class="stat-icon blue"><i class="fas fa-chart-line"></i></div>
+                                    <div>
+                                        <div class="stat-label">Ventas del Mes</div>
+                                        <div class="stat-value" id="statVentasMes" data-animate th:attr="data-animate=${ventasDelMes}, data-moneda=true"
+                                            th:text="'S/ ' + ${#numbers.formatDecimal(ventasDelMes, 1, 'COMMA', 2, 'POINT')}">S/ 0.00</div>
+                                        <div class="stat-sub" th:text="${cantidadVentasMes} + ' venta(s) este mes'">0 venta(s) este mes</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="stat-card-item">
+                            <a href="/pedidos?estado=PENDIENTE" class="stat-card-link">
+                                <div class="card stat-card">
+                                    <div class="card-body">
+                                        <div class="stat-icon red"><i class="fas fa-shopping-bag"></i></div>
+                                        <div>
+                                            <div class="stat-label">Pedidos Web Pendientes</div>
+                                            <div class="stat-value" id="statPedidos" data-animate th:attr="data-animate=${pedidosWebPendientes}"
+                                                th:text="${pedidosWebPendientes}">0</div>
+                                            <div class="stat-sub">Desde el catálogo público</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="stat-card-item">
+                            <div class="card stat-card">
+                                <div class="card-body">
+                                    <div class="stat-icon blue"><i class="fas fa-users"></i></div>
+                                    <div>
+                                        <div class="stat-label">Clientes Registrados</div>
+                                        <div class="stat-value" id="statClientes" data-animate th:attr="data-animate=${totalClientes}"
+                                            th:text="${totalClientes}">0</div>
+                                        <div class="stat-sub">En la bodega</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="stat-card-item">
+                            <div class="card stat-card">
+                                <div class="card-body">
+                                    <div class="stat-icon green"><i class="fas fa-box"></i></div>
+                                    <div>
+                                        <div class="stat-label">Productos Activos</div>
+                                        <div class="stat-value" id="statProductos" data-animate th:attr="data-animate=${totalProductosActivos}"
+                                            th:text="${totalProductosActivos}">0</div>
+                                        <div class="stat-sub">Disponibles para venta</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="stat-card-item">
+                            <div class="card stat-card">
+                                <div class="card-body">
+                                    <div class="stat-icon orange"><i class="fas fa-exclamation-triangle"></i></div>
+                                    <div>
+                                        <div class="stat-label">Stock Bajo</div>
+                                        <div class="stat-value" id="statStockBajo" data-animate th:attr="data-animate=${productosStockBajo}"
+                                            th:text="${productosStockBajo}">0</div>
+                                        <div class="stat-sub">Productos bajo mínimo</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Gráficos -->
+                    <div class="row mb-4">
+                        <div class="col-lg-8 mb-4">
+                            <div class="card chart-card chart-card-ganancias">
+                                <div class="card-header bg-white border-bottom d-flex flex-wrap align-items-center justify-content-between">
+                                    <div class="mb-2 mb-md-0">
+                                        <h3 class="card-title mb-0">
+                                            <i class="fas fa-coins mr-1 text-success"></i>
+                                            <span id="tituloGanancias">Ganancias de ventas</span>
+                                        </h3>
+                                        <small class="text-muted" id="subtituloGanancias">Últimos 7 días</small>
+                                    </div>
+                                    <div class="btn-group btn-group-sm" role="group" id="filtroGanancias">
+                                        <button type="button" class="btn btn-outline-success active" data-periodo="DIA">Por día</button>
+                                        <button type="button" class="btn btn-outline-success" data-periodo="MES">Por mes</button>
+                                        <button type="button" class="btn btn-outline-success" data-periodo="ANIO">Por año</button>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-end align-items-center mb-2">
+                                        <strong class="text-success" id="totalGanancias">Total: S/ 0.00</strong>
+                                    </div>
+                                    <div class="chart-ganancias-wrap">
+                                        <div class="chart-ganancias-loading" id="gananciasLoading">
+                                            <span><i class="fas fa-spinner fa-spin mr-1"></i> Cargando gráfico...</span>
+                                        </div>
+                                        <canvas id="chartGanancias"></canvas>
+                                        <div class="chart-empty" id="chartGananciasEmpty" style="display:none;">
+                                            <span><i class="fas fa-coins mr-1"></i>Sin ventas registradas en este período</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 mb-4">
+                            <div class="card chart-card">
+                                <div class="card-header bg-white border-bottom">
+                                    <h3 class="card-title mb-0"><i class="fas fa-chart-pie mr-1 text-info"></i> Ventas POS y Web</h3>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="chartFormaPago" th:if="${ventasPorCanal != null and !#lists.isEmpty(ventasPorCanal['labels'])}"></canvas>
+                                    <div class="chart-empty" th:if="${ventasPorCanal == null or #lists.isEmpty(ventasPorCanal['labels'])}">
+                                        <span><i class="fas fa-chart-pie mr-1"></i>Sin ventas este mes</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tablas principales -->
+                    <div class="row mb-4">
+                        <div class="col-lg-6 mb-4">
+                            <div class="card dash-table-card h-100">
+                                <div class="card-header">
+                                    <h3 class="card-title">
+                                        <i class="fas fa-trophy trophy-icon"></i>
+                                        Top 5 Productos Más Vendidos
+                                    </h3>
+                                </div>
+                                <div class="card-body p-0 table-responsive">
+                                    <table class="table table-hover mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th>Producto</th>
+                                                <th class="text-center">Cant.</th>
+                                                <th class="text-right">Total</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr th:each="p, stat : ${topProductos}">
+                                                <td>
+                                                    <span th:if="${stat.index == 0}" class="mr-1">🥇</span>
+                                                    <span th:if="${stat.index == 1}" class="mr-1">🥈</span>
+                                                    <span th:if="${stat.index == 2}" class="mr-1">🥉</span>
+                                                    <span th:text="${p.nombre}">Producto</span>
+                                                </td>
+                                                <td class="text-center font-weight-bold" th:text="${p.cantidad}">0</td>
+                                                <td class="text-right font-weight-bold"
+                                                    th:text="'S/ ' + ${#numbers.formatDecimal(p.total, 1, 'COMMA', 2, 'POINT')}">
+                                                    S/ 0.00
+                                                </td>
+                                            </tr>
+                                            <tr th:if="${#lists.isEmpty(topProductos)}" class="empty-row">
+                                                <td colspan="3">
+                                                    <i class="fas fa-info-circle mr-1"></i>
+                                                    Aún no hay ventas registradas.
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-6 mb-4">
+                            <div class="card dash-table-card h-100">
+                                <div class="card-header">
+                                    <h3 class="card-title"><i class="fas fa-history mr-1 text-primary"></i> Últimas Ventas</h3>
+                                    <a href="/ventas" class="btn btn-sm btn-outline-primary">Ver todas</a>
+                                </div>
+                                <div class="card-body p-0 table-responsive">
+                                    <table class="table table-hover mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th>Documento</th>
+                                                <th>Cliente</th>
+                                                <th>Total</th>
+                                                <th>Estado</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr th:each="v : ${ventasRecientes}">
+                                                <td th:text="${v.numeroDocumento}">N001</td>
+                                                <td th:text="${v.cliente}">Cliente</td>
+                                                <td class="font-weight-bold"
+                                                    th:text="'S/ ' + ${#numbers.formatDecimal(v.total, 1, 'COMMA', 2, 'POINT')}">S/ 0</td>
+                                                <td>
+                                                    <span class="badge-estado"
+                                                        th:classappend="${v.estado == 'ANULADO' ? ' anulado' : (v.estado == 'PENDIENTE' ? ' pendiente' : ' completada')}"
+                                                        th:text="${v.estado == 'PAGADO' ? 'Pagada' : (v.estado == 'PENDIENTE' ? 'Pendiente' : (v.estado == 'ANULADO' ? 'Anulada' : v.estado))}">Pagada</span>
+                                                </td>
+                                            </tr>
+                                            <tr th:if="${#lists.isEmpty(ventasRecientes)}" class="empty-row">
+                                                <td colspan="4"><i class="fas fa-info-circle mr-1"></i>Aún no hay ventas registradas.</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Pedidos del catálogo -->
+                    <div class="row mb-4">
+                        <div class="col-12 mb-4">
+                            <div class="card dash-table-card">
+                                <div class="card-header">
+                                    <h3 class="card-title"><i class="fas fa-globe mr-1 text-success"></i> Pedidos del Catálogo</h3>
+                                    <a href="/pedidos" class="btn btn-sm btn-outline-success">Ver todos</a>
+                                </div>
+                                <div class="card-body p-0 table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>#</th>
+                                                <th>Cliente</th>
+                                                <th>Teléfono</th>
+                                                <th>Total</th>
+                                                <th>Estado</th>
+                                                <th>Acciones</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr th:each="p : ${pedidosRecientes}" th:attr="data-id=${p.id}">
+                                                <td th:text="${'#' + p.id}">#1</td>
+                                                <td th:text="${p.nombreCliente}">Cliente</td>
+                                                <td th:text="${p.telefono}">999</td>
+                                                <td class="font-weight-bold"
+                                                    th:text="'S/ ' + ${#numbers.formatDecimal(p.total, 1, 'COMMA', 2, 'POINT')}">S/ 0</td>
+                                                <td>
+                                                    <span class="badge-estado pendiente" th:text="${p.estado}">PENDIENTE</span>
+                                                </td>
+                                                <td class="text-center">
+                                                    <button type="button" class="btn btn-sm btn-info btn-ver-pedido"
+                                                            th:attr="data-id=${p.id}" title="Ver detalle del pedido">
+                                                        <i class="fas fa-eye"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                            <tr th:if="${#lists.isEmpty(pedidosRecientes)}" class="empty-row">
+                                                <td colspan="6"><i class="fas fa-shopping-bag mr-1"></i>No hay pedidos del catálogo aún.</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Stock bajo -->
+                    <div class="row mb-4" th:if="${!#lists.isEmpty(stockBajo)}">
+                        <div class="col-12">
+                            <div class="card dash-table-card border-warning">
+                                <div class="card-header">
+                                    <h3 class="card-title text-warning">
+                                        <i class="fas fa-exclamation-circle mr-1"></i> Productos con Stock Bajo
+                                    </h3>
+                                    <a href="/productos" class="btn btn-sm btn-outline-warning">Gestionar productos</a>
+                                </div>
+                                <div class="card-body p-0 table-responsive">
+                                    <table class="table table-hover mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th>Producto</th>
+                                                <th>Categoría</th>
+                                                <th class="text-center">Stock</th>
+                                                <th class="text-center">Mínimo</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr th:each="p : ${stockBajo}">
+                                                <td th:text="${p.nombre}">Producto</td>
+                                                <td th:text="${p.categoria}">Cat</td>
+                                                <td class="text-center font-weight-bold text-danger" th:text="${p.stock}">0</td>
+                                                <td class="text-center" th:text="${p.stockMinimo}">5</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+        </div>
+
+        <footer class="main-footer text-sm">
+            <strong>Jesmar Bodega</strong> — Sistema de Gestión
+            <div class="float-right d-none d-sm-inline-block">
+                <b>Versión</b> 2.0
+            </div>
+        </footer>
+    </div>
+
+    <script id="dashboard-chart-data" type="application/json" th:utext="${dashboardChartJson}"></script>
+
+    <!-- Modal Detalle Pedido (dashboard) -->
+    <div class="modal fade" id="modalDetallePedido" tabindex="-1" data-backdrop="static">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title"><i class="fas fa-receipt mr-2"></i>Detalle del Pedido</h5>
+                    <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+                </div>
+                <div class="modal-body">
+                    <div id="pedido-detalle-contenido">
+                        <p class="text-center text-muted py-4 mb-0">Cargando...</p>
+                    </div>
+                </div>
+                <div class="modal-footer" id="pedido-detalle-acciones">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Nota de Venta Pedido (dashboard) -->
+    <div class="modal fade modal-boleta-frente" id="modalBoletaPedido" tabindex="-1" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered modal-boleta-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white py-2">
+                    <h5 class="modal-title"><i class="fas fa-file-invoice mr-2"></i>Nota de Venta</h5>
+                    <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+                </div>
+                <div class="modal-body p-0 bg-light">
+                    <div id="pedido-boleta-contenido" class="boleta-electronica">
+                        <p class="text-center text-muted py-4 mb-0">Cargando nota de venta...</p>
+                    </div>
+                </div>
+                <div class="modal-footer py-2">
+                    <button type="button" class="btn btn-outline-success btn-sm" onclick="imprimirBoletaPedido()">
+                        <i class="fas fa-print mr-1"></i> Imprimir / Guardar PDF
+                    </button>
+                    <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script th:inline="javascript">
+        window.BOLETA_LOGO_URL = /*[[${logoUrl}]]*/ null;
+    </script>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2.0/dist/js/adminlte.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="/js/dashboard.js"></script>
+    <script src="/js/pedidos-acciones.js"></script>
+    <script src="/js/responsive.js"></script>
+    <script>
+        $(function () { $('[title]').tooltip({ placement: 'top' }); });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{layout :: commonHead('Gestión de Productos')}"></head>
+
+<body class="hold-transition sidebar-mini layout-fixed">
+<div class="wrapper">
+    <div th:replace="~{layout :: header}"></div>
+    <div th:replace="~{layout :: sidebar}"></div>
+
+    <div class="content-wrapper">
+        <div class="content-header">
+            <div class="container-fluid">
+                <div class="row mb-2">
+                    <div class="col-sm-6">
+                        <h1 class="m-0"><i class="fas fa-boxes mr-2"></i>Gestión de Productos</h1>
+                    </div>
+                    <div class="col-sm-6">
+                        <ol class="breadcrumb float-sm-right">
+                            <li class="breadcrumb-item"><a href="/dashboard">Inicio</a></li>
+                            <li class="breadcrumb-item active">Gestión de Productos</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <section class="content">
+            <div class="container-fluid">
+
+                <div th:if="${success}" class="alert alert-success alert-dismissible fade show">
+                    <i class="fas fa-check-circle mr-1"></i><span th:text="${success}"></span>
+                    <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+                </div>
+                <div th:if="${error}" class="alert alert-danger alert-dismissible fade show">
+                    <i class="fas fa-exclamation-circle mr-1"></i><span th:text="${error}"></span>
+                    <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+                </div>
+
+                <div class="card prod-page-card erp-page-card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h3 class="card-title mb-0"><i class="fas fa-warehouse mr-1"></i> Gestión de Productos</h3>
+                        <button type="button" class="btn btn-sm btn-nuevo-prod" onclick="abrirModalProducto(null)"
+                            data-toggle="tooltip" title="Registrar un nuevo producto en la bodega">
+                            <i class="fas fa-plus-circle mr-1"></i> Nuevo Producto
+                        </button>
+                    </div>
+                    <div class="card-body p-0 tabla-card-body">
+                        <table class="table table-hover table-striped table-bordered mb-0 tabla-modulo tabla-productos">
+                            <thead>
+                                <tr>
+                                    <th class="text-center" style="width:50px">ID</th>
+                                    <th>Nombre</th>
+                                    <th>Categoría</th>
+                                    <th class="text-center" style="width:110px">
+                                        <i class="fas fa-layer-group mr-1"></i>Present.
+                                    </th>
+                                    <th class="text-center" style="width:110px">
+                                        <i class="fas fa-cubes mr-1"></i>Stock total
+                                    </th>
+                                    <th class="text-center" style="width:100px">Estado</th>
+                                    <th class="text-center" style="width:140px">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="prod : ${productos}"
+                                    th:with="res=${presResumen != null ? presResumen[prod.id] : null}">
+                                    <td class="text-center align-middle prod-col-num" th:text="${prod.id}"></td>
+                                    <td class="align-middle font-weight-bold" th:text="${prod.nombre}"></td>
+                                    <td class="align-middle"
+                                        th:text="${prod.categoria != null ? prod.categoria.nombre : '—'}"></td>
+                                    <td class="text-center align-middle prod-col-num">
+                                        <span class="badge badge-pill"
+                                            th:classappend="${res != null and res.totalPresentaciones > 0} ? 'badge-primary' : 'badge-light'"
+                                            th:text="${res != null ? res.totalPresentaciones : 0}">0</span>
+                                    </td>
+                                    <td class="text-center align-middle">
+                                        <span class="prod-stock-total prod-col-num"
+                                            th:classappend="${res == null or res.stockTotal == 0} ? 'prod-stock-cero' : ''"
+                                            th:text="${res != null ? res.stockTotal : 0}">0</span>
+                                    </td>
+                                    <td class="text-center align-middle">
+                                        <span th:if="${prod.estado.name() == 'ACTIVO'}"
+                                            class="badge badge-success"><i class="fas fa-check mr-1"></i>Activo</span>
+                                        <span th:if="${prod.estado.name() == 'INACTIVO'}"
+                                            class="badge badge-secondary"><i class="fas fa-ban mr-1"></i>Inactivo</span>
+                                    </td>
+                                    <td class="col-acciones text-center align-middle">
+                                        <div class="prod-acciones-grupo">
+                                            <button type="button" class="btn btn-sm btn-accion-prod btn-accion-editar btn-editar-prod"
+                                                data-toggle="tooltip" title="Editar producto"
+                                                th:attr="data-id=${prod.id}">
+                                                <i class="fas fa-pen"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-sm btn-accion-prod btn-accion-presentaciones btn-presentaciones-prod"
+                                                data-toggle="tooltip" title="Gestionar presentaciones"
+                                                th:attr="data-id=${prod.id}, data-nombre=${prod.nombre}">
+                                                <i class="fas fa-th-list"></i>
+                                            </button>
+                                            <a th:href="@{/productos/eliminar/{id}(id=${prod.id})}"
+                                                class="btn btn-sm btn-accion-prod btn-accion-eliminar"
+                                                data-toggle="tooltip" title="Eliminar producto"
+                                                onclick="return confirm('¿Quitar este producto del inventario de la bodega?')">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr th:if="${#lists.isEmpty(productos)}">
+                                    <td colspan="7" class="text-center text-muted py-5">
+                                        <i class="fas fa-inbox fa-3x mb-3 d-block text-purple"></i>
+                                        No hay productos registrados.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="card-footer text-muted text-sm d-flex justify-content-between">
+                        <span>Total: <strong th:text="${#lists.size(productos)}"></strong> producto(s)</span>
+                        <span><i class="fas fa-info-circle mr-1"></i>Precios y stock se gestionan por presentación</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- MODAL PRODUCTO -->
+    <div class="modal fade modal-erp" id="modalProducto" tabindex="-1" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-primary">
+                    <h5 class="modal-title text-white" id="tituloModalProducto">
+                        <i class="fas fa-box mr-1"></i> Nuevo Producto
+                    </h5>
+                    <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+                </div>
+                <form id="formProducto" th:action="@{/productos/guardar}" method="post" novalidate>
+                    <div class="modal-body">
+                        <input type="hidden" id="prod-id" name="id" />
+                        <p class="text-muted small mb-3">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            Datos generales del producto. Precios, stock, imágenes y código de barras se configuran en
+                            <strong>Gestionar Presentaciones</strong> <i class="fas fa-th-list"></i>.
+                        </p>
+                        <div class="form-group">
+                            <label>Nombre <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="prod-nombre" name="nombre"
+                                maxlength="150" placeholder="Ej: Gloria leche azul" />
+                            <div class="invalid-feedback" id="err-prod-nombre"></div>
+                        </div>
+                        <div class="form-group">
+                            <label>Categoría <span class="text-danger">*</span></label>
+                            <select class="form-control" id="prod-categoria" name="categoriaId">
+                                <option value="">-- Seleccione --</option>
+                                <option th:each="cat : ${categorias}" th:value="${cat.id}"
+                                    th:text="${cat.nombre}"></option>
+                            </select>
+                            <div class="invalid-feedback" id="err-prod-categoria"></div>
+                        </div>
+                        <div class="form-group">
+                            <label>Estado <span class="text-danger">*</span></label>
+                            <select class="form-control" id="prod-estado" name="estado">
+                                <option value="ACTIVO">Activo</option>
+                                <option value="INACTIVO">Inactivo</option>
+                            </select>
+                            <div class="invalid-feedback" id="err-prod-estado"></div>
+                        </div>
+                        <div class="form-group mb-0">
+                            <label>Marca / Descripción <span class="text-muted">(opcional)</span></label>
+                            <textarea class="form-control" id="prod-desc" name="descripcion" rows="2" maxlength="500"
+                                placeholder="Marca, contenido neto, observaciones para catálogo..."></textarea>
+                            <small class="text-muted float-right" id="cnt-prod-desc">0 / 500</small>
+                            <div class="invalid-feedback" id="err-prod-desc"></div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                        <button type="button" class="btn btn-primary" onclick="validarProducto()">
+                            <i class="fas fa-save"></i> Guardar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL PRESENTACIONES -->
+    <div class="modal fade modal-presentaciones" id="modalPresentaciones" tabindex="-1" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title text-white mb-0">
+                        <i class="fas fa-th-list mr-1"></i> Gestionar Presentaciones
+                    </h5>
+                    <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Resumen del producto -->
+                    <div class="pres-resumen-producto" id="pres-resumen-producto">
+                        <div class="pres-resumen-img" id="pres-resumen-img">
+                            <i class="fas fa-box-open"></i>
+                        </div>
+                        <div class="pres-resumen-info">
+                            <h5 id="pres-prod-nombre">—</h5>
+                            <div class="pres-resumen-meta">
+                                <span><i class="fas fa-tag"></i><span id="pres-prod-categoria">—</span></span>
+                                <span><i class="fas fa-industry"></i><span id="pres-prod-marca">—</span></span>
+                                <span id="pres-prod-estado-wrap"></span>
+                            </div>
+                        </div>
+                        <div class="pres-resumen-stats">
+                            <div class="stat-item">Presentaciones: <strong id="pres-resumen-count">0</strong></div>
+                            <div class="stat-item">Stock total: <strong id="pres-resumen-stock">0</strong></div>
+                        </div>
+                    </div>
+
+                    <!-- KPIs -->
+                    <div class="pres-kpi-row">
+                        <div class="pres-kpi-card">
+                            <i class="fas fa-layer-group kpi-icon"></i>
+                            <div class="kpi-label">Total presentaciones</div>
+                            <div class="kpi-value" id="pres-kpi-total">0</div>
+                        </div>
+                        <div class="pres-kpi-card">
+                            <i class="fas fa-cubes kpi-icon"></i>
+                            <div class="kpi-label">Stock total</div>
+                            <div class="kpi-value" id="pres-kpi-stock">0</div>
+                        </div>
+                        <div class="pres-kpi-card">
+                            <i class="fas fa-coins kpi-icon"></i>
+                            <div class="kpi-label">Valor inventario (costo)</div>
+                            <div class="kpi-value" id="pres-kpi-valor">S/ 0.00</div>
+                        </div>
+                    </div>
+
+                    <!-- Toolbar -->
+                    <div class="pres-toolbar">
+                        <div class="pres-buscar-wrap">
+                            <i class="fas fa-search"></i>
+                            <input type="text" class="form-control form-control-sm" id="pres-buscar"
+                                placeholder="Buscar presentación por nombre, código..." autocomplete="off">
+                        </div>
+                        <button type="button" class="btn btn-sm btn-nueva-pres" id="btnNuevaPresentacion"
+                            data-toggle="tooltip" title="Agregar nueva presentación al producto">
+                            <i class="fas fa-plus-circle mr-1"></i> Nueva Presentación
+                        </button>
+                    </div>
+
+                    <div class="table-responsive tabla-presentaciones">
+                        <table class="table table-sm table-bordered table-hover mb-0 tabla-presentaciones-grid">
+                            <thead class="pres-tabla-thead">
+                                <tr>
+                                    <th class="text-center" style="width:52px" scope="col">Foto</th>
+                                    <th scope="col">Nombre</th>
+                                    <th class="text-center" scope="col">Cant.</th>
+                                    <th class="text-center" scope="col">Unidad</th>
+                                    <th class="text-center" scope="col">P. Compra</th>
+                                    <th class="text-center" scope="col">P. Venta</th>
+                                    <th class="text-center" scope="col">Ganancia</th>
+                                    <th class="text-center" scope="col">Stock</th>
+                                    <th class="text-center" scope="col">Stock Mín.</th>
+                                    <th class="text-center" scope="col">Cód. barras</th>
+                                    <th class="text-center" scope="col">Estado</th>
+                                    <th class="text-center" style="width:110px" scope="col">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="pres-tabla-body">
+                                <tr><td colspan="12" class="text-center text-muted py-4">Cargando...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="pres-lista-msg" class="small text-danger mt-2" style="display:none;"></div>
+                </div>
+                <div class="modal-footer bg-white">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        <i class="fas fa-times mr-1"></i> Cerrar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL FORM PRESENTACIÓN -->
+    <div class="modal fade modal-form-pres" id="modalFormPresentacion" tabindex="-1" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title text-white" id="tituloFormPresentacion">
+                        <i class="fas fa-plus-circle mr-1"></i> Nueva presentación
+                    </h5>
+                    <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="pres-form-id">
+                    <div class="pres-form-layout">
+                        <div class="pres-form-foto-box">
+                            <div class="pres-form-foto-preview" id="pres-form-foto-preview">
+                                <i class="fas fa-camera"></i>
+                            </div>
+                            <small class="text-muted d-block">Foto de la presentación</small>
+                            <small class="text-muted">Use <i class="fas fa-images"></i> Imágenes tras guardar</small>
+                        </div>
+                        <div>
+                            <div class="form-group">
+                                <label>Nombre de la presentación <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="pres-form-nombre" maxlength="100"
+                                    placeholder="Ej: Botella 500 ml, Paquete x6">
+                                <div class="invalid-feedback" id="err-pres-nombre"></div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label>Cantidad</label>
+                                        <input type="number" class="form-control" id="pres-form-cantidad" min="0" step="any"
+                                            placeholder="Ej: 500">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label>Unidad de medida</label>
+                                        <select class="form-control" id="pres-form-unidad">
+                                            <option value="">— Seleccione —</option>
+                                            <option value="Und">Und</option>
+                                            <option value="g">g</option>
+                                            <option value="kg">kg</option>
+                                            <option value="ml">ml</option>
+                                            <option value="L">L</option>
+                                            <option value="Paquete">Paquete</option>
+                                            <option value="Caja">Caja</option>
+                                            <option value="Bolsa">Bolsa</option>
+                                            <option value="Botella">Botella</option>
+                                            <option value="Lata">Lata</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group" id="pres-form-codigo-wrap" style="display:none;">
+                                        <label>Código de barras</label>
+                                        <input type="text" class="form-control bg-light" id="pres-form-codigo" readonly tabindex="-1">
+                                        <small class="text-muted">Generado al guardar.</small>
+                                    </div>
+                                    <div class="form-group mb-0" id="pres-form-codigo-hint">
+                                        <label class="text-muted">Código de barras</label>
+                                        <p class="form-control-plaintext small text-muted mb-0">
+                                            <i class="fas fa-barcode mr-1"></i>Se generará automáticamente
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Precio compra (S/) <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <div class="input-group-prepend"><span class="input-group-text">S/</span></div>
+                                    <input type="number" class="form-control" id="pres-form-precio-compra" step="0.01" min="0" value="0.00">
+                                </div>
+                                <div class="invalid-feedback" id="err-pres-precio-compra"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Precio venta (S/) <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <div class="input-group-prepend"><span class="input-group-text">S/</span></div>
+                                    <input type="number" class="form-control" id="pres-form-precio" step="0.01" min="0">
+                                </div>
+                                <div class="invalid-feedback" id="err-pres-precio"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="pres-form-ganancia-preview mb-3" id="pres-form-ganancia-preview">
+                        <i class="fas fa-chart-line mr-1"></i> Ganancia unitaria: <span id="pres-form-ganancia-val">S/ 0.00</span>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Stock <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" id="pres-form-stock" min="0" step="1" value="0">
+                                <div class="invalid-feedback" id="err-pres-stock"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Stock mínimo <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" id="pres-form-stock-min" min="0" step="1" value="0">
+                                <div class="invalid-feedback" id="err-pres-stock-min"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group mb-0">
+                                <label>Estado <span class="text-danger">*</span></label>
+                                <select class="form-control" id="pres-form-estado">
+                                    <option value="ACTIVO">Activo</option>
+                                    <option value="INACTIVO">Inactivo</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="pres-form-msg" class="alert alert-danger small mt-3 mb-0" style="display:none;"></div>
+                </div>
+                <div class="modal-footer bg-white">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="btnGuardarPresentacion">
+                        <i class="fas fa-save mr-1"></i> Guardar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL IMÁGENES PRESENTACIÓN -->
+    <div class="modal fade modal-erp" id="modalImagenesPresentacion" tabindex="-1" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-warning">
+                    <h5 class="modal-title">
+                        <i class="fas fa-images mr-1"></i>
+                        Imágenes — <span id="pres-img-nombre"></span>
+                    </h5>
+                    <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label><i class="fas fa-image mr-1"></i> Agregar imágenes</label>
+                        <div class="custom-file">
+                            <input type="file" class="custom-file-input" id="pres-img-files"
+                                accept=".jpg,.jpeg,.png,image/jpeg,image/png" multiple />
+                            <label class="custom-file-label" for="pres-img-files">Seleccionar imágenes</label>
+                        </div>
+                        <div class="text-danger small mt-1" id="err-pres-img-files"></div>
+                        <small class="text-muted">JPG o PNG, máx. 2 MB c/u.</small>
+                    </div>
+                    <p class="font-weight-bold mb-2">Imágenes actuales:</p>
+                    <div id="pres-galeria-existente" class="d-flex flex-wrap mb-3"></div>
+                    <p class="font-weight-bold mb-2" id="pres-lbl-preview" style="display:none;">Vista previa:</p>
+                    <div id="pres-galeria-preview" class="d-flex flex-wrap"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                    <button type="button" class="btn btn-primary" id="btnGuardarImagenesPresentacion">
+                        <i class="fas fa-save"></i> Guardar imágenes
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div th:replace="~{layout :: footer}"></div>
+</div>
+
+<script th:replace="~{layout :: scripts}"></script>
+<link rel="stylesheet" href="/css/productos-presentaciones.css" />
+<script th:inline="javascript">const productosData = [(${productosJson})];</script>
+<script src="/js/productos-presentaciones.js"></script>
+
+<script>
+    function abrirModalProducto(p) {
+        limpiarErrProd();
+        const esNuevo = !p || !p.id;
+        $('#tituloModalProducto').html(esNuevo
+            ? '<i class="fas fa-plus mr-1"></i> Nuevo Producto'
+            : '<i class="fas fa-edit mr-1"></i> Editar Producto');
+        if (!esNuevo) {
+            $('#prod-id').val(p.id);
+            $('#prod-nombre').val(p.nombre);
+            $('#prod-desc').val(p.descripcion || '');
+            $('#prod-categoria').val(p.categoriaId);
+            $('#prod-estado').val(p.estado || 'ACTIVO');
+            actualizarCntDesc();
+        } else {
+            $('#formProducto')[0].reset();
+            $('#prod-id').val('');
+            $('#prod-estado').val('ACTIVO');
+            $('#cnt-prod-desc').text('0 / 500');
+        }
+        $('#modalProducto').modal('show');
+    }
+
+    function validarProducto() {
+        let ok = true;
+        limpiarErrProd();
+        const nombre = $('#prod-nombre').val().trim();
+        if (!nombre || nombre.length < 2) { errProd('prod-nombre', 'err-prod-nombre', 'Ingrese el nombre del abarrote o producto (mín. 2 caracteres).'); ok = false; }
+        if (!$('#prod-categoria').val()) { errProd('prod-categoria', 'err-prod-categoria', 'Seleccione la categoría del producto (ej: Abarrotes, Bebidas).'); ok = false; }
+        if ($('#prod-desc').val().length > 500) { errProd('prod-desc', 'err-prod-desc', 'La descripción del producto no puede superar los 500 caracteres.'); ok = false; }
+        if (!$('#prod-estado').val()) { errProd('prod-estado', 'err-prod-estado', 'Indique si el producto estará a la venta en la bodega.'); ok = false; }
+        if (ok) $('#formProducto').submit();
+    }
+
+    function errProd(campo, err, msg) { $('#' + campo).addClass('is-invalid'); $('#' + err).text(msg); }
+    function limpiarErrProd() {
+        ['prod-nombre','prod-categoria','prod-desc','prod-estado']
+            .forEach(id => $('#' + id).removeClass('is-invalid'));
+        $('[id^=err-prod-]').text('');
+    }
+    function actualizarCntDesc() {
+        $('#cnt-prod-desc').text($('#prod-desc').val().length + ' / 500');
+    }
+    $('#prod-desc').on('input', actualizarCntDesc);
+
+    $(document).on('click', '.btn-editar-prod', function () {
+        const p = productosData.find(x => x.id === parseInt($(this).data('id'), 10));
+        if (p) abrirModalProducto(p);
+    });
+
+    $(function () {
+        $('[data-toggle="tooltip"]').tooltip();
+    });
+</script>
+</body>
+</html>

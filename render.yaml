@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: bodega-jesmar
+    runtime: docker
+    plan: free
+    healthCheckPath: /version
+    envVars:
+      - key: APP_VERSION
+        value: 1.0.0-candidato
+      - key: PORT
+        value: 8080
+      - key: NODE_API_ENABLED
+        value: "false"
+      - key: DB_URL
+        sync: false
+      - key: DB_USERNAME
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: MAIL_USERNAME
+        sync: false
+      - key: MAIL_PASSWORD
+        sync: false
+      - key: API_PERU_TOKEN
+        sync: false
+      - key: APP_ADMIN_INITIAL_PASSWORD
+        sync: false

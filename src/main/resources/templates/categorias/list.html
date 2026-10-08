@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{layout :: commonHead('Categorías')}"></head>
+
+<body class="hold-transition sidebar-mini layout-fixed">
+<div class="wrapper">
+    <div th:replace="~{layout :: header}"></div>
+    <div th:replace="~{layout :: sidebar}"></div>
+
+    <div class="content-wrapper">
+
+        <!-- ENCABEZADO -->
+        <section class="content-header px-3 py-3">
+            <div class="container-fluid">
+                <div class="row mb-2">
+                    <div class="col-sm-6">
+                        <h1><i class="fas fa-tags mr-2"></i>Gestión de Categorías</h1>
+                    </div>
+                    <div class="col-sm-6">
+                        <ol class="breadcrumb float-sm-right">
+                            <li class="breadcrumb-item"><a href="/dashboard">Inicio</a></li>
+                            <li class="breadcrumb-item active">Categorías</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- MENSAJES FLASH -->
+        <section class="px-3">
+            <div th:if="${success}" class="alert alert-success alert-dismissible fade show">
+                <i class="fas fa-check-circle mr-1"></i>
+                <span th:text="${success}"></span>
+                <button type="button" class="close" data-dismiss="alert">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div th:if="${error}" class="alert alert-danger alert-dismissible fade show">
+                <i class="fas fa-exclamation-circle mr-1"></i>
+                <span th:text="${error}"></span>
+                <button type="button" class="close" data-dismiss="alert">
+                    <span>&times;</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- CONTENIDO -->
+        <section class="content px-3">
+            <div class="card card-outline card-primary erp-page-card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3 class="card-title mb-0">
+                            <i class="fas fa-tags mr-1"></i> Listado de Categorías
+                        </h3>
+                        <button type="button" class="btn btn-primary btn-sm btn-erp-nuevo" onclick="abrirModal(null)"
+                            data-toggle="tooltip" title="Registrar nueva categoría">
+                            <i class="fas fa-plus-circle"></i> Nueva Categoría
+                    </button>
+                </div>
+                <div class="card-body p-0 tabla-card-body">
+                    <table class="table table-striped table-hover table-bordered mb-0 tabla-modulo">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th class="text-center" style="width:50px">#</th>
+                                <th>Nombre</th>
+                                <th>Descripción</th>
+                                <th class="text-center" style="width:90px">Productos</th>
+                                <th class="text-center" style="width:100px">Estado</th>
+                                <th class="text-center" style="width:150px">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="cat, stat : ${categorias}"
+                                th:with="totalProductos=${productosPorCategoria != null ? productosPorCategoria[cat.id] : 0}">
+                                <td class="text-center" th:text="${stat.index + 1}"></td>
+                                <td>
+                                    <i class="fas fa-tag text-primary mr-1"></i>
+                                    <span th:text="${cat.nombre}"></span>
+                                </td>
+                                <td
+                                    th:text="${cat.descripcion != null && !cat.descripcion.isEmpty() ? cat.descripcion : '—'}">
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge badge-light border"
+                                          th:text="${totalProductos != null ? totalProductos : 0}">0</span>
+                                </td>
+                                <td class="text-center">
+                                    <span th:if="${cat.estado.name() == 'ACTIVO'}"
+                                        class="badge badge-success">ACTIVO</span>
+                                    <span th:if="${cat.estado.name() == 'INACTIVO'}"
+                                        class="badge badge-danger">INACTIVO</span>
+                                </td>
+                                <td class="col-acciones text-center">
+                                    <div class="tabla-acciones-btns">
+                                    <button type="button" class="btn btn-sm btn-info btn-editar-cat" title="Editar"
+                                        th:attr="data-id=${cat.id}, data-nombre=${cat.nombre},
+                                                 data-descripcion=${cat.descripcion}, data-estado=${cat.estado != null ? cat.estado.name() : ''}">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <a th:if="${totalProductos == null or totalProductos == 0}"
+                                        th:href="@{/categorias/eliminar/{id}(id=${cat.id})}"
+                                        class="btn btn-sm btn-danger"
+                                        onclick="return confirm('¿Eliminar esta categoría?')"
+                                        title="Eliminar categoría">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                    <button th:if="${totalProductos != null and totalProductos > 0}"
+                                            type="button"
+                                            class="btn btn-sm btn-secondary"
+                                            disabled
+                                            th:title="'No se puede eliminar: tiene ' + totalProductos + ' producto(s) asociado(s)'">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(categorias)}">
+                                <td colspan="6" class="text-center text-muted py-4">
+                                    <i class="fas fa-inbox fa-2x mb-2 d-block"></i>
+                                    No hay categorías registradas.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="card-footer text-muted text-sm">
+                    Total: <strong th:text="${#lists.size(categorias)}"></strong> categoría(s)
+                </div>
+            </div>
+        </section>
+
+    </div><!-- /.content-wrapper -->
+
+
+    <!-- ===================== MODAL ===================== -->
+    <div class="modal fade modal-erp" id="modalCategoria" tabindex="-1" role="dialog" aria-labelledby="modalTitulo"
+        aria-hidden="true" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+
+                <div class="modal-header bg-primary">
+                    <h5 class="modal-title text-white" id="modalTitulo">
+                        <i class="fas fa-tag mr-1"></i> Nueva categoría
+                    </h5>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Cerrar"
+                        onclick="limpiarValidaciones()">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+
+                <form id="formCategoria" th:action="@{/categorias/guardar}" method="post" novalidate>
+
+                    <div class="modal-body">
+
+                        <!-- ID oculto -->
+                        <input type="hidden" id="cat-id" name="id" />
+
+                        <!-- NOMBRE -->
+                        <div class="form-group">
+                            <label for="cat-nombre">
+                                Nombre <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" class="form-control" id="cat-nombre" name="nombre"
+                                placeholder="Ej: Abarrotes, Bebidas, Lácteos, Limpieza..." maxlength="100"
+                                autocomplete="off" />
+                            <div class="invalid-feedback" id="error-nombre"></div>
+                            <small class="form-text text-muted">
+                                Solo letras, números y espacios. Máx. 100 caracteres.
+                            </small>
+                        </div>
+
+                        <!-- DESCRIPCIÓN -->
+                        <div class="form-group">
+                            <label for="cat-desc">Descripción</label>
+                            <textarea class="form-control" id="cat-desc" name="descripcion" rows="3" maxlength="255"
+                                placeholder="Ej: Productos enlatados, conservas y envasados..."></textarea>
+                            <div class="invalid-feedback" id="error-desc"></div>
+                            <small class="form-text text-muted d-flex justify-content-between">
+                                <span>Opcional. Máx. 255 caracteres.</span>
+                                <span id="contador-desc">0 / 255</span>
+                            </small>
+                        </div>
+
+                        <!-- ESTADO -->
+                        <div class="form-group mb-0">
+                            <label for="cat-estado">
+                                Estado <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-control" id="cat-estado" name="estado">
+                                <option value="">-- Seleccione --</option>
+                                <option value="ACTIVO">ACTIVO</option>
+                                <option value="INACTIVO">INACTIVO</option>
+                            </select>
+                            <div class="invalid-feedback" id="error-estado"></div>
+                        </div>
+
+                    </div><!-- /.modal-body -->
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal"
+                            onclick="limpiarValidaciones()">
+                            <i class="fas fa-times"></i> Cancelar
+                        </button>
+                        <button type="button" class="btn btn-primary" onclick="validarYGuardar()">
+                            <i class="fas fa-save"></i> Guardar
+                        </button>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+    </div>
+    <!-- =================== FIN MODAL =================== -->
+
+
+    <div th:replace="~{layout :: footer}"></div>
+</div><!-- /.wrapper -->
+
+    <script th:replace="~{layout :: scripts}"></script>
+
+    <script>
+        /* ─── ABRIR MODAL ─────────────────────────────── */
+        function abrirModal(cat) {
+            limpiarValidaciones();
+
+            if (cat && cat.id) {
+                $('#modalTitulo').html('<i class="fas fa-edit mr-1"></i> Editar categoría');
+                $('#cat-id').val(cat.id);
+                $('#cat-nombre').val(cat.nombre);
+                $('#cat-desc').val(cat.descripcion !== 'null' ? cat.descripcion : '');
+                $('#cat-estado').val(cat.estado);
+                actualizarContador();
+            } else {
+                $('#modalTitulo').html('<i class="fas fa-plus mr-1"></i> Nueva categoría');
+                $('#formCategoria')[0].reset();
+                $('#cat-id').val('');
+                $('#contador-desc').text('0 / 255');
+            }
+
+            $('#modalCategoria').modal('show');
+        }
+
+        /* ─── VALIDAR Y GUARDAR ───────────────────────── */
+        function validarYGuardar() {
+            let valido = true;
+            limpiarValidaciones();
+
+            // Nombre
+            const nombre = $('#cat-nombre').val().trim();
+            const regexNombre = /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ0-9\s\-\/&().]+$/;
+
+            if (nombre === '') {
+                mostrarError('cat-nombre', 'error-nombre', 'Ingrese el nombre de la categoría (ej: Bebidas, Snacks).');
+                valido = false;
+            } else if (nombre.length < 2) {
+                mostrarError('cat-nombre', 'error-nombre', 'El nombre de la categoría debe tener al menos 2 caracteres.');
+                valido = false;
+            } else if (nombre.length > 100) {
+                mostrarError('cat-nombre', 'error-nombre', 'El nombre de la categoría no puede superar los 100 caracteres.');
+                valido = false;
+            } else if (!regexNombre.test(nombre)) {
+                mostrarError('cat-nombre', 'error-nombre', 'Use solo letras, números y signos habituales para categorías de abarrotes.');
+                valido = false;
+            }
+
+            // Descripción
+            const desc = $('#cat-desc').val().trim();
+            if (desc.length > 255) {
+                mostrarError('cat-desc', 'error-desc', 'La descripción de la categoría no puede superar los 255 caracteres.');
+                valido = false;
+            }
+
+            // Estado
+            const estado = $('#cat-estado').val();
+            if (!estado) {
+                mostrarError('cat-estado', 'error-estado', 'Indique si la categoría estará activa en la bodega.');
+                valido = false;
+            }
+
+            if (valido) {
+                $('#formCategoria').submit();
+            }
+        }
+
+        /* ─── HELPERS ─────────────────────────────────── */
+        function mostrarError(campoId, errorId, mensaje) {
+            $('#' + campoId).addClass('is-invalid');
+            $('#' + errorId).text(mensaje);
+        }
+
+        function limpiarValidaciones() {
+            ['cat-nombre', 'cat-desc', 'cat-estado'].forEach(function (id) {
+                $('#' + id).removeClass('is-invalid is-valid');
+            });
+            $('#error-nombre, #error-desc, #error-estado').text('');
+        }
+
+        function actualizarContador() {
+            const len = $('#cat-desc').val().length;
+            $('#contador-desc').text(len + ' / 255');
+            if (len > 255) {
+                $('#cat-desc').addClass('is-invalid');
+                $('#error-desc').text('Máximo 255 caracteres.');
+            } else {
+                $('#cat-desc').removeClass('is-invalid');
+                $('#error-desc').text('');
+            }
+        }
+
+        /* ─── EVENTOS EN TIEMPO REAL ──────────────────── */
+        $('#cat-desc').on('input', actualizarContador);
+
+        $('#cat-nombre').on('input', function () {
+            $(this).removeClass('is-invalid');
+            $('#error-nombre').text('');
+        });
+
+        $('#cat-estado').on('change', function () {
+            $(this).removeClass('is-invalid');
+            $('#error-estado').text('');
+        });
+
+        /* ─── LIMPIAR AL CERRAR ───────────────────────── */
+        $('#modalCategoria').on('hidden.bs.modal', limpiarValidaciones);
+
+        $(document).on('click', '.btn-editar-cat', function () {
+            const $b = $(this);
+            abrirModal({
+                id: $b.data('id'),
+                nombre: $b.data('nombre') || '',
+                descripcion: $b.data('descripcion') || '',
+                estado: $b.data('estado') || ''
+            });
+        });
+    </script>
+
+</body>
+
+</html>

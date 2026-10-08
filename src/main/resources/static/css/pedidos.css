@@ -1,0 +1,370 @@
+/* ===== Gestión de Pedidos — diseño limpio con scroll solo en la tabla ===== */
+
+.pedidos-page .content-wrapper {
+    overflow-x: hidden;
+}
+
+.pedidos-table-card {
+    overflow: hidden;
+    border-radius: 14px;
+}
+
+.pedidos-header-tools {
+    gap: 0.5rem;
+}
+
+.pedidos-header-label {
+    color: rgba(255, 255, 255, 0.9) !important;
+    font-weight: 600;
+}
+
+.pedidos-filtro-estado {
+    width: auto;
+    min-width: 140px;
+    max-width: 180px;
+    background: rgba(255, 255, 255, 0.95);
+    border: none;
+    border-radius: 8px;
+}
+
+.tabla-pedidos-card-body {
+    overflow: hidden !important;
+    padding: 0 !important;
+    background: #fff;
+}
+
+.pedidos-scroll-hint {
+    display: none;
+    padding: 0.45rem 1rem;
+    font-size: 0.78rem;
+    color: #6d28d9;
+    background: linear-gradient(90deg, #faf5ff, #fff);
+    border-bottom: 1px solid #ede9fe;
+}
+
+@media (max-width: 1400px) {
+    .pedidos-scroll-hint {
+        display: block;
+    }
+}
+
+/* Toolbar DataTables */
+.pedidos-dt-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem 1rem;
+    padding: 0.85rem 1rem;
+    background: #faf5ff;
+    border-bottom: 1px solid #ede9fe;
+}
+
+.pedidos-dt-toolbar .dataTables_length,
+.pedidos-dt-toolbar .dataTables_filter {
+    margin: 0;
+}
+
+.pedidos-dt-toolbar .dataTables_length label,
+.pedidos-dt-toolbar .dataTables_filter label {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin: 0;
+    font-size: 0.875rem;
+    color: #4b5563;
+    font-weight: 500;
+}
+
+.pedidos-dt-toolbar .dataTables_filter input {
+    min-width: 180px;
+    border-radius: 8px;
+    border: 1px solid #ddd6fe;
+    padding: 0.35rem 0.65rem;
+}
+
+.pedidos-dt-toolbar .dataTables_filter input:focus {
+    border-color: #7c3aed;
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.12);
+}
+
+/* Área con scroll — solo la tabla */
+.pedidos-dt-scroll {
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: visible;
+    -webkit-overflow-scrolling: touch;
+    background: #fff;
+}
+
+.pedidos-dt-scroll::-webkit-scrollbar {
+    height: 8px;
+}
+
+.pedidos-dt-scroll::-webkit-scrollbar-track {
+    background: #f3f4f6;
+}
+
+.pedidos-dt-scroll::-webkit-scrollbar-thumb {
+    background: #a78bfa;
+    border-radius: 999px;
+}
+
+.pedidos-dt-scroll::-webkit-scrollbar-thumb:hover {
+    background: #7c3aed;
+}
+
+/* Footer DataTables */
+.pedidos-dt-footer {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem 1rem;
+    padding: 0.75rem 1rem;
+    background: #faf5ff;
+    border-top: 1px solid #ede9fe;
+}
+
+.pedidos-dt-footer .dataTables_info {
+    margin: 0;
+    font-size: 0.85rem;
+    color: #6b7280;
+}
+
+.pedidos-dt-footer .dataTables_paginate {
+    margin: 0;
+}
+
+.pedidos-dt-footer .pagination {
+    margin-bottom: 0;
+}
+
+.tabla-pedidos-card-body .dataTables_wrapper {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    overflow: visible !important;
+    padding: 0 !important;
+}
+
+/* Tabla compacta y completa */
+.tabla-pedidos,
+table.dataTable.tabla-pedidos {
+    width: 100% !important;
+    min-width: 1100px !important;
+    margin: 0 !important;
+    font-size: 0.84rem;
+    border-collapse: separate !important;
+    border-spacing: 0;
+}
+
+.tabla-pedidos thead th,
+table.dataTable.tabla-pedidos thead th {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    padding: 0.55rem 0.5rem !important;
+    vertical-align: middle;
+    white-space: nowrap;
+    background: #1e293b !important;
+    border-color: #334155 !important;
+}
+
+.tabla-pedidos tbody td,
+table.dataTable.tabla-pedidos tbody td {
+    padding: 0.5rem 0.5rem !important;
+    vertical-align: middle;
+    border-color: #eef2f7 !important;
+}
+
+.tabla-pedidos tbody tr:nth-child(even) {
+    background: #fafafa;
+}
+
+.tabla-pedidos tbody tr:hover {
+    background: #f5f3ff !important;
+}
+
+.tabla-pedidos .pedido-col-id {
+    width: 48px;
+    min-width: 48px;
+    white-space: nowrap;
+    font-weight: 600;
+    color: #6d28d9;
+}
+
+.tabla-pedidos .pedido-col-fecha {
+    min-width: 86px;
+    line-height: 1.2;
+}
+
+.pedido-fecha-dia {
+    display: block;
+    font-weight: 600;
+    color: #1e293b;
+    font-size: 0.82rem;
+}
+
+.pedido-fecha-hora {
+    display: block;
+    font-size: 0.72rem;
+    color: #64748b;
+}
+
+.tabla-pedidos .pedido-col-cliente {
+    min-width: 130px;
+    max-width: 200px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-weight: 500;
+}
+
+.tabla-pedidos .pedido-col-telefono {
+    min-width: 96px;
+    white-space: nowrap;
+    font-size: 0.82rem;
+}
+
+.tabla-pedidos .pedido-col-comprobante {
+    width: 64px;
+    min-width: 64px;
+    text-align: center;
+}
+
+.tabla-pedidos .pedido-col-recojo,
+.tabla-pedidos .pedido-col-pago,
+.tabla-pedidos .pedido-col-estado {
+    min-width: 82px;
+    white-space: nowrap;
+    text-align: center;
+}
+
+.tabla-pedidos .pedido-col-codigo {
+    min-width: 118px;
+    text-align: center;
+}
+
+.badge-codigo-validacion {
+    background: #ede9fe;
+    color: #5b21b6;
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.03em;
+    font-weight: 700;
+    padding: 0.35em 0.55em;
+}
+
+.tabla-pedidos .pedido-col-total {
+    min-width: 84px;
+    white-space: nowrap;
+    font-weight: 700;
+    color: #111827;
+}
+
+.tabla-pedidos .pedido-col-acciones {
+    min-width: 120px;
+    text-align: center;
+}
+
+.pedido-acciones-btns {
+    display: inline-grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 3px;
+    justify-items: center;
+}
+
+.pedido-acciones-btns .btn {
+    padding: 0.25rem 0.4rem;
+    line-height: 1;
+    width: 30px;
+    height: 28px;
+    font-size: 0.75rem;
+}
+
+.pedido-comprobante-thumb {
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 1px solid #e5e7eb;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.pedido-comprobante-thumb:hover {
+    transform: scale(1.05);
+    box-shadow: 0 2px 8px rgba(109, 40, 217, 0.2);
+}
+
+.badge-pago-yape {
+    background-color: #742284 !important;
+    color: #fff !important;
+    font-weight: 600;
+    font-size: 0.72rem;
+    padding: 0.3em 0.55em;
+}
+
+.badge-pago-plin {
+    background-color: #00a9e0 !important;
+    color: #fff !important;
+    font-weight: 600;
+    font-size: 0.72rem;
+    padding: 0.3em 0.55em;
+}
+
+.badge-recojo,
+.pedido-estado-badge {
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 0.3em 0.55em;
+}
+
+@media (max-width: 767.98px) {
+    .pedidos-dt-toolbar,
+    .pedidos-dt-footer {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .pedidos-dt-toolbar .dataTables_length label,
+    .pedidos-dt-toolbar .dataTables_filter label {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .pedidos-dt-toolbar .dataTables_filter input {
+        width: 100% !important;
+        min-width: 0;
+        margin-left: 0 !important;
+    }
+
+    .pedidos-dt-footer .dataTables_info,
+    .pedidos-dt-footer .dataTables_paginate {
+        text-align: center;
+        width: 100%;
+    }
+
+    .pedidos-dt-footer .pagination {
+        justify-content: center;
+    }
+
+    .pedidos-header-tools {
+        width: 100%;
+    }
+
+    .pedidos-filtro-estado {
+        flex: 1;
+        max-width: none;
+    }
+}
+
+@media (min-width: 1400px) {
+    .tabla-pedidos,
+    table.dataTable.tabla-pedidos {
+        min-width: 100% !important;
+    }
+}

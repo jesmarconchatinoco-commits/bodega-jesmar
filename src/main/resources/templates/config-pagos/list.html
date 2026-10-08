@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{layout :: commonHead('Configuración de Pagos')}"></head>
+
+<body class="hold-transition sidebar-mini layout-fixed">
+<div class="wrapper">
+    <div th:replace="~{layout :: header}"></div>
+    <div th:replace="~{layout :: sidebar}"></div>
+
+    <div class="content-wrapper">
+        <section class="content-header px-3 py-3">
+            <div class="container-fluid">
+                <div class="row mb-2 align-items-center">
+                    <div class="col-sm-6">
+                        <h1 class="m-0"><i class="fas fa-credit-card mr-2"></i>Configuración de Pagos</h1>
+                        <p class="text-muted mb-0 small">Yape y Plin para POS y tienda virtual</p>
+                    </div>
+                    <div class="col-sm-6">
+                        <ol class="breadcrumb float-sm-right">
+                            <li class="breadcrumb-item"><a href="/dashboard">Inicio</a></li>
+                            <li class="breadcrumb-item active">Configuración de Pagos</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="content px-3 pb-4">
+            <div id="config-pago-alerta" class="alert d-none"></div>
+            <div class="row" id="configPagoCards">
+                <div class="col-md-6 mb-3" th:each="cfg : ${configuraciones}">
+                    <div class="card card-outline card-primary h-100">
+                        <div class="card-header">
+                            <h3 class="card-title mb-0" th:text="${cfg.canal == 'YAPE' ? 'Configuración Yape' : 'Configuración Plin'}">Pago</h3>
+                            <span class="badge float-right"
+                                  th:classappend="${cfg.estado == 'ACTIVO' ? 'badge-success' : 'badge-secondary'}"
+                                  th:text="${cfg.estado}">ACTIVO</span>
+                        </div>
+                        <div class="card-body">
+                            <form class="form-config-pago" th:attr="data-id=${cfg.id}, data-canal=${cfg.canal}">
+                                <input type="hidden" name="id" th:value="${cfg.id}" />
+                                <input type="hidden" name="canal" th:value="${cfg.canal}" />
+                                <div class="form-group">
+                                    <label>Número de celular *</label>
+                                    <input type="text" name="celular" class="form-control form-control-sm" maxlength="15"
+                                           th:value="${cfg.celular}" required />
+                                </div>
+                                <div class="form-group">
+                                    <label>Nombre del titular *</label>
+                                    <input type="text" name="nombreTitular" class="form-control form-control-sm" maxlength="120"
+                                           th:value="${cfg.nombreTitular}" required />
+                                </div>
+                                <div class="form-group">
+                                    <label>Texto del código QR</label>
+                                    <input type="text" name="textoQr" class="form-control form-control-sm" maxlength="500"
+                                           th:value="${cfg.textoQr}" placeholder="Opcional: texto personalizado para el QR" />
+                                </div>
+                                <div class="form-group">
+                                    <label>Imagen QR (JPG/PNG)</label>
+                                    <input type="file" name="imagenQr" class="form-control-file form-control-sm" accept="image/jpeg,image/png" />
+                                    <div th:if="${cfg.imagenQr}" class="mt-2 text-center">
+                                        <img th:src="${cfg.imagenQr}" alt="QR" style="max-width:140px" class="img-thumbnail" />
+                                    </div>
+                                </div>
+                                <div class="form-group mb-0">
+                                    <label>Estado</label>
+                                    <select name="estado" class="form-control form-control-sm">
+                                        <option value="ACTIVO" th:selected="${cfg.estado == 'ACTIVO'}">Activo</option>
+                                        <option value="INACTIVO" th:selected="${cfg.estado == 'INACTIVO'}">Inactivo</option>
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-sm mt-3">
+                                    <i class="fas fa-save mr-1"></i> Guardar
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <div th:replace="~{layout :: footer}"></div>
+</div>
+<div th:replace="~{layout :: scripts}"></div>
+<script src="/js/config-pagos-acciones.js"></script>
+</body>
+</html>

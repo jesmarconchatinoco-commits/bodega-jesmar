@@ -1,0 +1,10 @@
+# Copie este archivo como application-local.properties y complete los valores.
+# application-local.properties está en .gitignore y no se sube a GitHub.
+# En la nube use las mismas claves como variables de entorno (DB_URL, DB_PASSWORD, MAIL_PASSWORD, API_PERU_TOKEN).
+DB_URL=jdbc:mysql://localhost:3306/sistema_ventas
+DB_USERNAME=bodega_app
+DB_PASSWORD=
+MAIL_USERNAME=
+MAIL_PASSWORD=
+API_PERU_TOKEN=
+app.admin.initial-password=

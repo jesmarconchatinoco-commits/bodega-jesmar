@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <th:block th:replace="~{layout :: commonHead('Gestión Pedidos')}" />
+    <link rel="stylesheet" href="/css/pedidos.css" />
+</head>
+
+<body class="hold-transition sidebar-mini layout-fixed pedidos-page">
+<div class="wrapper">
+    <div th:replace="~{layout :: header}"></div>
+    <div th:replace="~{layout :: sidebar}"></div>
+
+    <div class="content-wrapper">
+        <section class="content-header px-3 py-3">
+            <div class="container-fluid">
+                <div class="row mb-2 align-items-center">
+                    <div class="col-sm-6">
+                        <h1 class="m-0"><i class="fas fa-shopping-bag mr-2"></i>Gestión de Pedidos</h1>
+                    </div>
+                    <div class="col-sm-6">
+                        <ol class="breadcrumb float-sm-right">
+                            <li class="breadcrumb-item"><a href="/dashboard">Inicio</a></li>
+                            <li class="breadcrumb-item active">Pedidos</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="content px-3">
+            <div class="row mb-3">
+                <div class="col-md-4 col-sm-6 mb-2">
+                    <div class="small-box bg-warning">
+                        <div class="inner">
+                            <h3 th:text="${pendientes}">0</h3>
+                            <p>Pendientes</p>
+                        </div>
+                        <div class="icon"><i class="fas fa-clock"></i></div>
+                    </div>
+                </div>
+                <div class="col-md-4 col-sm-6 mb-2">
+                    <div class="small-box bg-success">
+                        <div class="inner">
+                            <h3 th:text="${atendidos}">0</h3>
+                            <p>Atendidos</p>
+                        </div>
+                        <div class="icon"><i class="fas fa-check-circle"></i></div>
+                    </div>
+                </div>
+                <div class="col-md-4 col-sm-6 mb-2">
+                    <div class="small-box bg-secondary">
+                        <div class="inner">
+                            <h3 th:text="${cancelados}">0</h3>
+                            <p>Cancelados</p>
+                        </div>
+                        <div class="icon"><i class="fas fa-ban"></i></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card card-outline card-primary erp-page-card pedidos-table-card">
+                <div class="card-header d-flex flex-wrap justify-content-between align-items-center">
+                    <h3 class="card-title mb-2 mb-md-0">
+                        <i class="fas fa-list mr-1"></i> Pedidos del Catálogo Web
+                    </h3>
+                    <div class="d-flex flex-wrap align-items-center pedidos-header-tools">
+                        <label class="mb-0 mr-2 small pedidos-header-label">Estado:</label>
+                        <select id="filtroEstado" class="form-control form-control-sm mr-2 pedidos-filtro-estado">
+                            <option value="TODOS" th:selected="${filtroEstado == 'TODOS'}">Todos</option>
+                            <option value="PENDIENTE" th:selected="${filtroEstado == 'PENDIENTE'}">Pendiente</option>
+                            <option value="ATENDIDO" th:selected="${filtroEstado == 'ATENDIDO'}">Atendido</option>
+                            <option value="CANCELADO" th:selected="${filtroEstado == 'CANCELADO'}">Cancelado</option>
+                        </select>
+                        <a href="/catalogo" target="_blank" class="btn btn-outline-success btn-sm">
+                            <i class="fas fa-external-link-alt mr-1"></i> Ver catálogo
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body p-0 tabla-card-body tabla-pedidos-card-body">
+                    <p class="pedidos-scroll-hint mb-0">
+                        <i class="fas fa-arrows-alt-h mr-1"></i> Desliza horizontalmente para ver todas las columnas
+                    </p>
+                    <table class="table table-striped table-bordered table-hover tabla-modulo tabla-pedidos mb-0"
+                           data-order-col="1" data-order-dir="desc">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th class="pedido-col-id">#</th>
+                                <th class="pedido-col-fecha">Fecha</th>
+                                <th class="pedido-col-cliente">Cliente</th>
+                                <th class="pedido-col-telefono">Teléfono</th>
+                                <th class="pedido-col-comprobante text-center">Comprobante</th>
+                                <th class="pedido-col-recojo">Recojo</th>
+                                <th class="pedido-col-pago">Pago</th>
+                                <th class="pedido-col-codigo">Cód. validación</th>
+                                <th class="pedido-col-total">Total</th>
+                                <th class="pedido-col-estado">Estado</th>
+                                <th class="pedido-col-acciones">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:if="${#lists.isEmpty(pedidos)}">
+                                <td colspan="11" class="text-center text-muted py-4">
+                                    <i class="fas fa-shopping-bag fa-2x mb-2 d-block"></i>
+                                    No hay pedidos registrados con ese filtro.
+                                </td>
+                            </tr>
+                            <tr th:each="p : ${pedidos}" th:attr="data-id=${p.id},data-estado=${p.estado},data-venta-id=${p.ventaId}">
+                                <td class="pedido-col-id" th:text="${'#' + p.id}">#1</td>
+                                <td class="pedido-col-fecha">
+                                    <span th:if="${p.fecha != null}" class="pedido-fecha-dia"
+                                          th:text="${#temporals.format(p.fecha, 'dd/MM/yyyy')}">—</span>
+                                    <span th:if="${p.fecha != null}" class="pedido-fecha-hora"
+                                          th:text="${#temporals.format(p.fecha, 'HH:mm')}">—</span>
+                                    <span th:if="${p.fecha == null}" class="text-muted">—</span>
+                                </td>
+                                <td class="pedido-col-cliente" th:text="${p.nombreCliente}" th:title="${p.nombreCliente}">Cliente</td>
+                                <td class="pedido-col-telefono" th:text="${p.telefono != null ? p.telefono : '—'}">—</td>
+                                <td class="pedido-col-comprobante text-center align-middle">
+                                    <img th:if="${p.comprobantePago != null}"
+                                         th:src="@{'/archivos/' + ${p.comprobantePago.ruta}}"
+                                         class="pedido-comprobante-thumb btn-ver-comprobante"
+                                         th:attr="data-id=${p.id},data-url=@{'/archivos/' + ${p.comprobantePago.ruta}}"
+                                         alt="Comprobante" title="Ver comprobante">
+                                    <span th:unless="${p.comprobantePago != null}" class="text-muted small">—</span>
+                                </td>
+                                <td class="pedido-col-recojo">
+                                    <span th:if="${p.formaEntrega != null and p.formaEntrega.name() == 'ENVIO_DOMICILIO'}"
+                                          class="badge badge-info badge-recojo">Envío</span>
+                                    <span th:if="${p.formaEntrega != null and p.formaEntrega.name() == 'RECOJO_TIENDA'}"
+                                          class="badge badge-primary badge-recojo">Tienda</span>
+                                    <span th:if="${p.formaEntrega == null}" class="text-muted">—</span>
+                                </td>
+                                <td class="pedido-col-pago">
+                                    <span th:if="${p.metodoPago != null and p.metodoPago.name() == 'YAPE'}"
+                                          class="badge badge-pago-yape">Yape</span>
+                                    <span th:if="${p.metodoPago != null and p.metodoPago.name() == 'PLIN'}"
+                                          class="badge badge-pago-plin">Plin</span>
+                                    <span th:if="${p.metodoPago == null}" class="text-muted">—</span>
+                                </td>
+                                <td class="pedido-col-codigo">
+                                    <span th:if="${p.codigoValidacionPago != null and !#strings.isEmpty(p.codigoValidacionPago)}"
+                                          class="badge badge-codigo-validacion"
+                                          th:text="${p.codigoValidacionPago}"
+                                          th:title="${p.codigoValidacionPago}">000000</span>
+                                    <span th:unless="${p.codigoValidacionPago != null and !#strings.isEmpty(p.codigoValidacionPago)}"
+                                          class="text-muted">—</span>
+                                </td>
+                                <td class="pedido-col-total font-weight-bold"
+                                    th:text="'S/ ' + ${#numbers.formatDecimal(p.total, 1, 'COMMA', 2, 'POINT')}">S/ 0.00</td>
+                                <td class="pedido-col-estado">
+                                    <span th:if="${p.estado != null and p.estado.name() == 'PENDIENTE'}"
+                                          class="badge badge-warning pedido-estado-badge">Pendiente</span>
+                                    <span th:if="${p.estado != null and p.estado.name() == 'ATENDIDO'}"
+                                          class="badge badge-success pedido-estado-badge">Atendido</span>
+                                    <span th:if="${p.estado != null and p.estado.name() == 'CANCELADO'}"
+                                          class="badge badge-secondary pedido-estado-badge">Cancelado</span>
+                                </td>
+                                <td class="col-acciones pedido-col-acciones text-center">
+                                    <div class="tabla-acciones-btns pedido-acciones-btns">
+                                        <button type="button" class="btn btn-sm btn-info btn-ver-pedido"
+                                                th:attr="data-id=${p.id}" title="Ver detalle">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-secondary btn-editar-comprobante"
+                                                th:if="${p.estado != null and p.estado.name() == 'PENDIENTE'}"
+                                                th:attr="data-id=${p.id},data-url=${p.comprobantePago != null ? '/archivos/' + p.comprobantePago.ruta : ''}"
+                                                title="Editar comprobante">
+                                            <i class="fas fa-image"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-warning btn-ver-venta-pedido"
+                                                th:if="${p.estado != null and p.estado.name() == 'ATENDIDO'}"
+                                                th:attr="data-id=${p.id},data-venta-id=${p.ventaId}"
+                                                th:title="${p.ventaId != null ? 'Ver nota de venta' : 'Ver detalle del pedido'}">
+                                            <i class="fas fa-file-invoice"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-success btn-atender-pedido"
+                                                th:if="${p.estado != null and p.estado.name() == 'PENDIENTE'}"
+                                                th:attr="data-id=${p.id}" title="Validar venta">
+                                            <i class="fas fa-check"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-danger btn-cancelar-pedido"
+                                                th:if="${p.estado != null and p.estado.name() == 'PENDIENTE'}"
+                                                th:attr="data-id=${p.id}" title="Cancelar">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Modal Editar Comprobante -->
+    <div class="modal fade" id="modalEditarComprobante" tabindex="-1" data-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-secondary text-white">
+                    <h5 class="modal-title"><i class="fas fa-image mr-2"></i>Editar comprobante de pago</h5>
+                    <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+                </div>
+                <div class="modal-body text-center">
+                    <input type="hidden" id="comprobantePedidoId">
+                    <div class="mb-3">
+                        <img id="previewComprobantePedido" src="" alt="Comprobante"
+                             class="img-fluid rounded border" style="max-height:280px;display:none;">
+                        <p id="sinComprobantePedido" class="text-muted mb-0">Sin comprobante cargado</p>
+                    </div>
+                    <div class="custom-file text-left">
+                        <input type="file" class="custom-file-input" id="inputComprobantePedido" accept="image/jpeg,image/jpg,image/png">
+                        <label class="custom-file-label" for="inputComprobantePedido">Elegir imagen JPG o PNG</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="btnGuardarComprobantePedido">
+                        <i class="fas fa-save mr-1"></i> Guardar imagen
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Ver Comprobante -->
+    <div class="modal fade" id="modalVerComprobante" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-dark text-white py-2">
+                    <h5 class="modal-title"><i class="fas fa-receipt mr-2"></i>Comprobante de pago</h5>
+                    <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+                </div>
+                <div class="modal-body text-center p-2">
+                    <img id="imgVerComprobante" src="" alt="Comprobante" class="img-fluid rounded">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Detalle Pedido -->
+    <div class="modal fade" id="modalDetallePedido" tabindex="-1" data-backdrop="static">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title"><i class="fas fa-receipt mr-2"></i>Detalle del Pedido</h5>
+                    <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+                </div>
+                <div class="modal-body">
+                    <div id="pedido-detalle-contenido">
+                        <p class="text-center text-muted py-4 mb-0">Cargando...</p>
+                    </div>
+                </div>
+                <div class="modal-footer" id="pedido-detalle-acciones">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Nota de Venta Pedido -->
+    <div class="modal fade modal-boleta-frente" id="modalBoletaPedido" tabindex="-1" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered modal-boleta-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white py-2">
+                    <h5 class="modal-title"><i class="fas fa-file-invoice mr-2"></i>Nota de Venta</h5>
+                    <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+                </div>
+                <div class="modal-body p-0 bg-light">
+                    <div id="pedido-boleta-contenido" class="boleta-electronica">
+                        <p class="text-center text-muted py-4 mb-0">Cargando nota de venta...</p>
+                    </div>
+                </div>
+                <div class="modal-footer py-2">
+                    <button type="button" class="btn btn-outline-success btn-sm" onclick="imprimirBoletaPedido()">
+                        <i class="fas fa-print mr-1"></i> Imprimir / Guardar PDF
+                    </button>
+                    <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div th:replace="~{layout :: footer}"></div>
+    <script th:replace="~{layout :: scripts}"></script>
+    <script th:inline="javascript">
+        window.BOLETA_LOGO_URL = /*[[${logoUrl}]]*/ null;
+    </script>
+    <script src="/js/pedidos-acciones.js"></script>
+</div>
+</body>
+
+</html>

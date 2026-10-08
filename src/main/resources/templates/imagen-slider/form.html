@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{layout :: commonHead('Imagen Slider')}"></head>
+
+<body class="hold-transition sidebar-mini layout-fixed">
+<div class="wrapper">
+    <div th:replace="~{layout :: header}"></div>
+    <div th:replace="~{layout :: sidebar}"></div>
+    <div class="content-wrapper">
+        <section class="content-header px-3 py-3">
+            <div class="container-fluid">
+                <div class="row mb-2">
+                    <div class="col-sm-6">
+                        <h1 th:text="${slider.id != null ? 'Editar slider' : 'Nuevo slider'}"></h1>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <section class="content px-3">
+            <div class="card">
+                <div class="card-body">
+                    <form th:action="@{/imagen-slider/guardar}" th:object="${slider}" method="post"
+                        enctype="multipart/form-data">
+                        <input type="hidden" th:field="*{id}" />
+                        <div class="mb-3"><label class="form-label">Título</label><input class="form-control"
+                                th:field="*{titulo}" required /></div>
+                        <div class="mb-3"><label class="form-label">Descripción</label><textarea class="form-control"
+                                th:field="*{descripcion}" rows="3"></textarea></div>
+                        <div class="mb-3">
+                            <label class="form-label">Imagen</label>
+                            <div class="custom-file">
+                                <input type="file" class="custom-file-input" id="slider-form-imagen" name="imagenFile"
+                                       accept=".jpg,.jpeg,.png,image/jpeg,image/png" required>
+                                <label class="custom-file-label" for="slider-form-imagen">Agregar imagen</label>
+                            </div>
+                        </div>
+                        <div class="mb-3"><label class="form-label">Estado</label><select class="form-select"
+                                th:field="*{estado}">
+                                <option value="ACTIVO">ACTIVO</option>
+                                <option value="INACTIVO">INACTIVO</option>
+                            </select></div>
+                        <button class="btn btn-success">Guardar</button>
+                        <a href="/imagen-slider" class="btn btn-secondary">Cancelar</a>
+                    </form>
+                </div>
+            </div>
+        </section>
+    </div>
+    <div th:replace="~{layout :: footer}"></div>
+</div>
+    <script th:replace="~{layout :: scripts}"></script>
+</body>
+
+</html>

@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head th:fragment="commonHead(title)">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title th:text="${title}">Jesmar Bodega</title>
+
+    <!-- 1. Google Fonts -->
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+
+    <!-- 2. Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+    <!-- 3. Bootstrap 4 (compatible con AdminLTE 3) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" />
+
+    <!-- 4. AdminLTE 3 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2.0/dist/css/adminlte.min.css" />
+
+    <!-- 5. DataTables responsive -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap4.min.css" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap4.min.css" />
+
+    <!-- 6. Estilos personalizados -->
+    <link rel="stylesheet" href="/css/layout.css" />
+    <link rel="stylesheet" href="/css/components.css" />
+    <link rel="stylesheet" href="/css/erp-modulos.css" />
+    <link rel="stylesheet" href="/css/responsive.css" />
+</head>
+
+<body class="hold-transition sidebar-mini layout-fixed">
+    <div class="wrapper">
+
+        <!-- ========== HEADER ========== -->
+        <nav th:fragment="header" class="main-header navbar navbar-expand navbar-white navbar-light">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" data-widget="pushmenu" href="#" role="button">
+                        <i class="fas fa-bars"></i>
+                    </a>
+                </li>
+                <li class="nav-item d-none d-sm-inline-block">
+                    <a href="/dashboard" class="nav-link">
+                        <i class="fas fa-home"></i> Inicio
+                    </a>
+                </li>
+                <li class="nav-item d-none d-sm-inline-block">
+                    <a href="/catalogo" class="nav-link">
+                        <i class="fas fa-shopping-cart"></i> Catálogo
+                    </a>
+                </li>
+            </ul>
+            <ul class="navbar-nav ml-auto align-items-center">
+                <li class="nav-item dropdown">
+                    <a class="nav-link d-flex align-items-center py-2" data-toggle="dropdown" href="#" role="button">
+                        <span class="user-avatar"
+                              th:text="${#strings.toUpperCase(#strings.substring(usuarioActual, 0, 1))}">U</span>
+                        <span class="user-name ml-2" th:text="${usuarioActual}">Usuario</span>
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-right">
+                        <span class="dropdown-item-text text-muted small px-3 py-2 d-md-none"
+                              th:text="${usuarioActual}">Usuario</span>
+                        <div class="dropdown-divider d-md-none"></div>
+                        <a href="/logout" class="dropdown-item">
+                            <i class="fas fa-sign-out-alt mr-2"></i> Cerrar sesión
+                        </a>
+                    </div>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- ========== SIDEBAR ========== -->
+        <aside th:fragment="sidebar" class="main-sidebar sidebar-dark-primary elevation-4">
+            <a th:replace="~{fragments/brand :: sidebarLink('/dashboard')}"></a>
+            <div class="sidebar">
+                <nav class="mt-2">
+                    <ul th:replace="~{fragments/sidebar-menu :: items}"></ul>
+                </nav>
+            </div>
+        </aside>
+
+        <!-- ========== FOOTER ========== -->
+        <footer th:fragment="footer" class="main-footer">
+            <strong>Bodega Jesmar</strong> - Sistema de Gestión
+            <div class="float-right d-none d-sm-inline-block">
+                <b>Versión</b> 2.0.0
+            </div>
+        </footer>
+
+    </div>
+
+    <!-- ========== SCRIPTS ========== -->
+    <div th:fragment="scripts">
+        <!-- 1. jQuery (requerido por Bootstrap 4 y AdminLTE) -->
+        <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
+        <!-- 2. Bootstrap 4 bundle -->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+
+        <!-- 3. AdminLTE 3 -->
+        <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2.0/dist/js/adminlte.min.js"></script>
+
+        <!-- 4. DataTables -->
+        <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+        <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap4.min.js"></script>
+        <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+        <script src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap4.min.js"></script>
+        <script src="/js/tables.js"></script>
+        <script src="/js/responsive.js"></script>
+
+        <script>
+            window.IMAGEN_INPUT_PLACEHOLDER = 'Agregar imagen';
+
+            window.sincronizarStockProducto = function (productoId, stock) {
+                $('.prod-stock-cell[data-producto-id="' + productoId + '"]').text(stock);
+
+                if (typeof productosDisponibles !== 'undefined' && Array.isArray(productosDisponibles)) {
+                    productosDisponibles.forEach(function (p) {
+                        if (p.id === productoId) {
+                            p.stock = stock;
+                        }
+                    });
+                    $('#venta-producto-select option[value="' + productoId + '"]').each(function () {
+                        var nombre = $(this).text().split(' (Stock')[0];
+                        $(this).attr('data-stock', stock).text(nombre + ' (Stock: ' + stock + ')');
+                    });
+                }
+
+                if (typeof productosData !== 'undefined' && Array.isArray(productosData)) {
+                    var prod = productosData.find(function (x) { return x.id === productoId; });
+                    if (prod) {
+                        prod.stock = stock;
+                    }
+                }
+            };
+
+            function actualizarEtiquetaArchivoImagen(input) {
+                var $input = $(input);
+                var $label = $input.next('.custom-file-label');
+                if (!$label.length) return;
+                var placeholder = $input.data('placeholder') || window.IMAGEN_INPUT_PLACEHOLDER;
+                var files = input.files;
+                if (files && files.length > 1) {
+                    $label.text(files.length + ' imagen(es)');
+                } else if (files && files.length === 1) {
+                    $label.text(files[0].name);
+                } else {
+                    $label.text(placeholder);
+                }
+            }
+
+            $(document).ready(function () {
+                $('[data-toggle="tooltip"]').tooltip();
+                $('[data-toggle="popover"]').popover();
+                $('.custom-file-input').each(function () {
+                    actualizarEtiquetaArchivoImagen(this);
+                });
+            });
+
+            $(document).on('change', '.custom-file-input', function () {
+                actualizarEtiquetaArchivoImagen(this);
+            });
+        </script>
+    </div>
+
+</body>
+
+</html>

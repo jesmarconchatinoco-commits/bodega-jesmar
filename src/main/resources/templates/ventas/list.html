@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{layout :: commonHead('Gestión Ventas')}"></head>
+
+<body class="hold-transition sidebar-mini layout-fixed">
+<div class="wrapper">
+    <div th:replace="~{layout :: header}"></div>
+    <div th:replace="~{layout :: sidebar}"></div>
+
+    <div class="content-wrapper">
+        <section class="content-header px-3 py-3">
+            <div class="container-fluid">
+                <div class="row mb-2 align-items-center">
+                    <div class="col-sm-6">
+                        <h1 class="m-0"><i class="fas fa-shopping-cart mr-2"></i>Gestión Ventas</h1>
+                    </div>
+                    <div class="col-sm-6">
+                        <ol class="breadcrumb float-sm-right">
+                            <li class="breadcrumb-item"><a href="/dashboard">Inicio</a></li>
+                            <li class="breadcrumb-item active">Gestión Ventas</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="content px-3">
+            <div th:if="${success}" class="alert alert-success alert-dismissible fade show">
+                <i class="fas fa-check-circle mr-1"></i><span th:text="${success}"></span>
+                <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+            </div>
+            <div th:unless="${miapiConfigurado}" class="alert alert-warning">
+                <i class="fas fa-exclamation-triangle mr-1"></i>
+                <strong>ApiPeru no configurado.</strong> Falta el token en <code>application.properties</code>
+                (<code>app.validacion.api-token</code>).
+                Obténgalo en <a href="https://apiperu.dev/app/dashboard" target="_blank" rel="noopener">apiperu.dev/app/dashboard</a>
+                y reinicie la app. Mientras tanto, en Ventas escriba el nombre del cliente manualmente.
+            </div>
+            <div th:if="${error}" class="alert alert-danger alert-dismissible fade show">
+                <i class="fas fa-exclamation-circle mr-1"></i><span th:text="${error}"></span>
+                <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+            </div>
+
+            <div class="card card-outline card-primary erp-page-card">
+                <div class="card-header d-flex justify-content-between align-items-center flex-wrap">
+                    <h3 class="card-title mb-0"><i class="fas fa-receipt mr-1"></i> Listado de Ventas</h3>
+                    <div class="card-header-acciones">
+                        <button type="button" class="btn btn-primary btn-sm btn-erp-nuevo" onclick="abrirModalVenta()"
+                            data-toggle="tooltip" title="Registrar nueva venta">
+                            <i class="fas fa-cash-register mr-1"></i> Nueva Venta
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body p-0 tabla-card-body">
+                    <table id="tablaVentas" class="table table-hover table-striped table-bordered w-100 tabla-modulo tabla-ventas mb-0"
+                           data-order-col="0" data-order-dir="desc">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th class="text-center" style="width:55px">ID</th>
+                                <th class="text-center" style="width:115px">Nº Documento</th>
+                                <th>Cliente</th>
+                                <th>Vendedor</th>
+                                <th class="text-center" style="width:130px">Fecha</th>
+                                <th class="text-center" style="width:80px">Origen</th>
+                                <th class="text-center" style="width:105px">Total</th>
+                                <th class="text-center" style="width:95px">Estado</th>
+                                <th class="text-center" style="width:100px">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="venta : ${ventas}"
+                                th:with="esCredito=${(venta.tipoPago != null and (#strings.equalsIgnoreCase(venta.tipoPago.nombre, 'Crédito') or #strings.equalsIgnoreCase(venta.tipoPago.nombre, 'Credito'))) or (venta.numeroCuotas != null and venta.numeroCuotas > 0)}">
+                                <td class="text-center align-middle" th:text="${venta.id}"></td>
+                                <td class="text-center align-middle text-nowrap" th:text="${venta.numeroDocumento}"></td>
+                                <td class="align-middle" th:text="${venta.cliente != null ? venta.cliente.nombre : '—'}"></td>
+                                <td class="align-middle" th:text="${venta.vendedor != null ? venta.vendedor.nombre : '—'}"></td>
+                                <td class="text-center align-middle text-nowrap" th:text="${venta.fecha != null ? #temporals.format(venta.fecha, 'dd/MM/yyyy HH:mm') : '—'}"></td>
+                                <td class="text-center align-middle">
+                                    <span class="badge badge-info"
+                                          th:text="${origenesVenta != null && origenesVenta[venta.id] != null ? origenesVenta[venta.id] : 'POS'}">POS</span>
+                                </td>
+                                <td class="text-center align-middle font-weight-bold text-nowrap" th:text="'S/ ' + ${#numbers.formatDecimal(venta.total, 1, 'COMMA', 2, 'POINT')}"></td>
+                                <td class="text-center align-middle">
+                                    <span th:if="${venta.estado != null and venta.estado.name() == 'ANULADO'}" class="badge badge-danger">Anulada</span>
+                                    <span th:if="${venta.estado != null and venta.estado.name() == 'PENDIENTE'}" class="badge badge-warning">Pendiente</span>
+                                    <span th:if="${venta.estado != null and venta.estado.name() == 'PAGADO'}" class="badge badge-success">Pagada</span>
+                                    <span th:if="${venta.estado == null}" class="badge badge-secondary">—</span>
+                                </td>
+                                <td class="ventas-col-acciones text-center align-middle">
+                                    <div class="ventas-acciones-btns">
+                                        <div class="dropdown">
+                                            <button type="button"
+                                                    class="btn btn-sm btn-primary dropdown-toggle ventas-dropdown-acciones"
+                                                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                <i class="fas fa-ellipsis-v mr-1"></i> Más
+                                            </button>
+                                            <div class="dropdown-menu dropdown-menu-right ventas-menu-acciones">
+                                                <h6 class="dropdown-header">Venta</h6>
+                                                <button th:if="${!esCredito and (venta.estado == null or venta.estado.name() != 'ANULADO')}"
+                                                        type="button" class="dropdown-item"
+                                                        th:attr="data-venta-id=${venta.id}" onclick="editarVenta(this)">
+                                                    <i class="fas fa-edit text-secondary mr-2"></i>Editar venta
+                                                </button>
+                                                <button type="button" class="dropdown-item"
+                                                        th:attr="data-venta-id=${venta.id}" onclick="abrirDetalle(this)">
+                                                    <i class="fas fa-file-invoice text-success mr-2"></i>Ver detalle
+                                                </button>
+                                                <button type="button" class="dropdown-item"
+                                                        th:attr="data-venta-id=${venta.id}" onclick="abrirBoletaElectronica(this)">
+                                                    <i class="fas fa-file-invoice text-danger mr-2"></i>Ver nota de venta
+                                                </button>
+                                                <div th:if="${venta.estado != null and venta.estado.name() != 'ANULADO'}"
+                                                     class="dropdown-divider"></div>
+                                                <a th:if="${venta.estado != null and venta.estado.name() != 'ANULADO'}"
+                                                   th:href="@{/ventas/eliminar/{id}(id=${venta.id})}"
+                                                   class="dropdown-item text-danger"
+                                                   onclick="return confirm('¿Anular esta venta registrada en la bodega?')">
+                                                    <i class="fas fa-trash mr-2"></i>Anular venta
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(ventas)}">
+                                <td colspan="9" class="text-center text-muted py-4">
+                                    <i class="fas fa-inbox fa-2x mb-2 d-block"></i>
+                                    No hay ventas registradas.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="card-footer text-muted text-sm">
+                    Total: <strong th:text="${#lists.size(ventas)}"></strong> venta(s)
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- MODAL NUEVA VENTA — POS -->
+    <div class="modal fade" id="modalVenta" tabindex="-1" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable modal-venta-pos">
+            <div class="modal-content">
+                <div class="modal-header pos-modal-header text-white">
+                    <h5 class="modal-title" id="modalVentaTitulo"><i class="fas fa-cart-plus mr-2"></i>Nueva Venta</h5>
+                    <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+                </div>
+                <div class="modal-body pos-modal-body">
+                    <div id="venta-toast-area" class="mb-2"></div>
+                    <input type="hidden" id="venta-edit-id">
+
+                    <div class="row">
+                        <!-- Columna izquierda: cliente, comprobante, pago -->
+                        <div class="col-lg-5">
+                            <div class="card pos-section-card">
+                                <div class="card-header"><i class="fas fa-user mr-1"></i> Datos del Cliente</div>
+                                <div class="card-body">
+                                    <div class="form-group mb-2">
+                                        <label class="small font-weight-bold text-muted mb-1">DNI / RUC</label>
+                                        <div class="input-group">
+                                            <input type="text" id="venta-documento" class="form-control" maxlength="11"
+                                                   placeholder="Ingrese DNI o RUC">
+                                            <div class="input-group-append">
+                                                <button type="button" id="venta-btn-buscar" class="btn btn-primary" onclick="buscarCliente()">
+                                                    <i class="fas fa-search"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group mb-0">
+                                        <label class="small font-weight-bold text-muted mb-1">Nombre del Cliente</label>
+                                        <input type="text" id="venta-nombre-cliente" class="form-control"
+                                               th:readonly="${miapiConfigurado}"
+                                               th:placeholder="${miapiConfigurado} ? 'Se autocompleta al buscar' : 'Escriba el nombre y busque de nuevo'">
+                                        <input type="hidden" id="venta-cliente-id">
+                                    </div>
+                                    <div id="venta-cliente-status" class="pos-cliente-status" style="display:none;">
+                                        <i class="fas fa-check-circle"></i> Cliente encontrado y verificado
+                                    </div>
+                                    <small th:if="${miapiConfigurado}" class="form-text text-muted mt-2 mb-0">
+                                        Tras buscar con ApiPeru, los datos quedan bloqueados.
+                                    </small>
+                                    <small th:unless="${miapiConfigurado}" class="form-text text-muted mt-2 mb-0">
+                                        Sin ApiPeru: ingrese DNI, escriba el nombre y pulse buscar.
+                                    </small>
+                                </div>
+                            </div>
+
+                            <div class="card pos-section-card">
+                                <div class="card-header"><i class="fas fa-file-invoice mr-1"></i> Comprobante</div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-7 form-group mb-0">
+                                            <label class="small font-weight-bold text-muted mb-1">Serie</label>
+                                            <select id="venta-comprobante" class="form-control" onchange="actualizarNumeroVenta()">
+                                                <option th:each="c : ${tiposComprobante}"
+                                                        th:value="${c.id}"
+                                                        th:attr="data-serie=${c.serie}"
+                                                        th:text="${c.nombre + ' (' + c.serie + ')'}"></option>
+                                            </select>
+                                        </div>
+                                        <div class="col-5 form-group mb-0">
+                                            <label class="small font-weight-bold text-muted mb-1">Número</label>
+                                            <div class="pos-comprobante-num form-control-plaintext" id="venta-numero">—</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="card pos-section-card mb-lg-0">
+                                <div class="card-header"><i class="fas fa-wallet mr-1"></i> Forma de Pago</div>
+                                <div class="card-body pb-2">
+                                    <input type="hidden" id="venta-tipo-pago" value="">
+                                    <div id="pos-tipo-pago-grid" class="pos-pago-grid pos-forma-pago-grid">
+                                        <button type="button" class="pos-pago-card pos-tipo-pago-card"
+                                                th:each="tp : ${tiposPago}"
+                                                th:attr="data-id=${tp.id}, data-nombre=${tp.nombre}">
+                                            <i class="fas fa-money-bill-wave"></i>
+                                            <span th:text="${tp.nombre}">Contado</span>
+                                        </button>
+                                    </div>
+                                    <div class="pos-qr-box" id="pos-qr-pago"></div>
+                                    <div id="pos-codigo-verificacion-box" class="pos-codigo-box d-none mt-2">
+                                        <label class="small font-weight-bold text-muted mb-1">Código de Verificación *</label>
+                                        <input type="text" id="pos-codigo-verificacion" class="form-control form-control-sm"
+                                               maxlength="30" placeholder="Código de operación Yape/Plin" autocomplete="off">
+                                    </div>
+                                    <div id="pos-pago-mixto-box" class="pos-pago-mixto d-none mt-2">
+                                        <div class="small font-weight-bold text-muted mb-1">Desglose Pago Mixto</div>
+                                        <div class="form-group mb-1">
+                                            <label class="small mb-0">Efectivo</label>
+                                            <input type="number" step="0.01" min="0" id="pos-mixto-efectivo" class="form-control form-control-sm pos-mixto-input" value="0">
+                                        </div>
+                                        <div class="form-group mb-1 pos-mixto-fila-pago">
+                                            <div class="pos-mixto-campo">
+                                                <label class="small mb-0">Yape</label>
+                                                <input type="number" step="0.01" min="0" id="pos-mixto-yape" class="form-control form-control-sm pos-mixto-input" value="0">
+                                            </div>
+                                            <div id="pos-mixto-qr-yape" class="pos-mixto-qr"></div>
+                                        </div>
+                                        <div class="form-group mb-1 pos-mixto-fila-pago">
+                                            <div class="pos-mixto-campo">
+                                                <label class="small mb-0">Plin</label>
+                                                <input type="number" step="0.01" min="0" id="pos-mixto-plin" class="form-control form-control-sm pos-mixto-input" value="0">
+                                            </div>
+                                            <div id="pos-mixto-qr-plin" class="pos-mixto-qr"></div>
+                                        </div>
+                                        <div class="d-flex justify-content-between small mt-1">
+                                            <span>Saldo restante:</span>
+                                            <strong id="pos-mixto-saldo">S/ 0.00</strong>
+                                        </div>
+                                    </div>
+                                    <small class="text-muted d-block mt-2 mb-0">Seleccione la forma de pago. Yape/Plin requieren código de verificación.</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Columna derecha: catálogo de productos -->
+                        <div class="col-lg-7">
+                            <div class="card pos-section-card pos-catalogo-panel h-100 mb-0">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <span><i class="fas fa-store mr-1"></i> Catálogo por Presentación</span>
+                                    <span class="badge badge-light text-purple" id="pos-catalogo-count">0 presentaciones</span>
+                                </div>
+                                <div class="card-body pos-catalogo-body">
+                                    <div class="pos-catalogo-filtros mb-2">
+                                        <div class="row">
+                                            <div class="col-md-7 form-group mb-md-0">
+                                                <label class="small font-weight-bold text-muted mb-1">Buscar</label>
+                                                <div class="input-group input-group-sm">
+                                                    <div class="input-group-prepend">
+                                                        <span class="input-group-text bg-white"><i class="fas fa-search text-muted"></i></span>
+                                                    </div>
+                                                    <input type="text" id="pos-catalogo-buscar" class="form-control"
+                                                           placeholder="Marca, producto, presentación o código de barras...">
+                                                </div>
+                                            </div>
+                                            <div class="col-md-5 form-group mb-0">
+                                                <label class="small font-weight-bold text-muted mb-1">Categoría</label>
+                                                <select id="pos-catalogo-categoria" class="form-control form-control-sm">
+                                                    <option value="">Todas las categorías</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div id="pos-catalogo-grid" class="pos-venta-catalogo">
+                                        <div class="pos-catalogo-vacio w-100">Cargando productos...</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Detalle de venta -->
+                    <div class="card pos-section-card mt-3 mb-3">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <span><i class="fas fa-list mr-1"></i> Detalle de la Venta</span>
+                            <span class="badge badge-light text-purple" id="pos-items-count">0 productos</span>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0 pos-detalle-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Producto</th>
+                                            <th>Medida / Precio</th>
+                                            <th class="text-center" style="width:120px">Cantidad</th>
+                                            <th class="text-center" style="width:90px">Descuento</th>
+                                            <th class="text-center" style="width:110px">Subtotal</th>
+                                            <th class="text-center" style="width:60px">Acción</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="venta-productos-body">
+                                        <tr id="venta-sin-productos">
+                                            <td colspan="6" class="text-center text-muted py-4">
+                                                <i class="fas fa-shopping-basket fa-2x mb-2 d-block opacity-50"></i>
+                                                Aún no hay productos en la venta
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Resumen totales -->
+                    <div class="row justify-content-end">
+                        <div class="col-lg-5 col-md-6">
+                            <div class="card pos-resumen-card">
+                                <div class="card-header"><i class="fas fa-calculator mr-1"></i> Resumen</div>
+                                <div class="card-body">
+                                    <div class="pos-resumen-line">
+                                        <span class="pos-resumen-label">Subtotal</span>
+                                        <span class="pos-resumen-valor" id="pos-res-subtotal">S/ 0.00</span>
+                                    </div>
+                                    <div class="pos-resumen-line">
+                                        <span class="pos-resumen-label">Descuento</span>
+                                        <span class="pos-resumen-valor descuento" id="pos-res-descuento">- S/ 0.00</span>
+                                    </div>
+                                    <div class="pos-resumen-line pos-total">
+                                        <span class="pos-resumen-label">Total a Pagar</span>
+                                        <span class="pos-resumen-valor" id="pos-res-total">S/ 0.00</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer pos-modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary px-4" id="btn-guardar-venta" onclick="guardarVenta()">
+                        <i class="fas fa-save mr-1"></i> Guardar Venta
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DETALLE VENTA -->
+    <div class="modal fade modal-erp" id="modalDetalle" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title"><i class="fas fa-file-invoice mr-2"></i>Detalle de Venta</h5>
+                    <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <button type="button" class="btn btn-success btn-sm mr-1" onclick="exportarVentaExcel()">
+                            <i class="fas fa-file-excel mr-1"></i>Exportar a Excel
+                        </button>
+                        <button type="button" class="btn btn-danger btn-sm" onclick="abrirBoletaDesdeDetalle()">
+                            <i class="fas fa-file-invoice mr-1"></i>Ver nota de venta
+                        </button>
+                    </div>
+                    <div id="detalle-contenido"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL NOTA DE VENTA (al final para mostrarse al frente) -->
+    <div class="modal fade modal-boleta-frente" id="modalBoleta" tabindex="-1" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered modal-boleta-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white py-2">
+                    <h5 class="modal-title"><i class="fas fa-file-invoice mr-2"></i>Nota de Venta</h5>
+                    <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+                </div>
+                <div class="modal-body p-0 bg-light">
+                    <div id="boleta-contenido" class="boleta-electronica">
+                        <p class="text-center text-muted py-4 mb-0">Cargando nota de venta...</p>
+                    </div>
+                </div>
+                <div class="modal-footer py-2">
+                    <button type="button" class="btn btn-outline-danger btn-sm" onclick="imprimirBoletaElectronica()">
+                        <i class="fas fa-print mr-1"></i> Imprimir
+                    </button>
+                    <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div th:replace="~{layout :: footer}"></div>
+    <link rel="stylesheet" href="/css/ventas-pos.css" />
+    <script th:replace="~{layout :: scripts}"></script>
+    <script th:inline="javascript">
+        window.BOLETA_LOGO_URL = /*[[${logoUrl}]]*/ null;
+        window.apiPeruActivo = /*[[${miapiConfigurado}]]*/ false;
+        window.posPagoConfig = /*[[${pagoConfig}]]*/ { yapeCelular: '', plinCelular: '', yape: {}, plin: {} };
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="/js/ventas-acciones.js"></script>
+    <script src="/js/ventas-pos.js"></script>
+</div>
+</body>
+</html>
