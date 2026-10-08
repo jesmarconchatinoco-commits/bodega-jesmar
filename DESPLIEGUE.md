@@ -4,6 +4,7 @@
 
 | Dato | Valor |
 |---|---|
+| Repositorio | https://github.com/jesmarconchatinoco-commits/bodega-jesmar |
 | Etiqueta | `v1.0.0-candidato` |
 | Plataforma | GitHub + contenedor Docker (Render) |
 | Ambiente de comprobación | Local, Windows, Laragon MySQL en `127.0.0.1:3306` |
