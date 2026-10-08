@@ -382,7 +382,11 @@
             ' <small class="ml-2 opacity-75">(' + filasActuales.length + ' registros)</small>';
 
         if (dataTable) {
-            dataTable.destroy();
+            try {
+                dataTable.destroy();
+            } catch (e) {
+                $('#tablaReporte').removeClass('dataTable');
+            }
             dataTable = null;
         }
 
@@ -392,7 +396,8 @@
         tbody.innerHTML = '';
 
         if (filasActuales.length === 0) {
-            columnasActuales.forEach(function (col) {
+            var columnasVacias = columnasActuales.length ? columnasActuales : ['Resultado'];
+            columnasVacias.forEach(function (col) {
                 var th = document.createElement('th');
                 th.textContent = col;
                 thead.appendChild(th);
@@ -403,13 +408,6 @@
                 thAccEmpty.className = 'col-acciones text-center';
                 thead.appendChild(thAccEmpty);
             }
-            var trEmpty = document.createElement('tr');
-            var tdEmpty = document.createElement('td');
-            tdEmpty.colSpan = Math.max(columnasActuales.length + (permiteDetalle ? 1 : 0), 1);
-            tdEmpty.className = 'text-center text-muted py-4';
-            tdEmpty.textContent = 'No hay registros para los filtros seleccionados. Pruebe ampliar el período a "Todo el historial".';
-            trEmpty.appendChild(tdEmpty);
-            tbody.appendChild(trEmpty);
             initDataTable();
             actualizarResumen(data);
             return;
@@ -496,7 +494,7 @@
                 infoEmpty: 'Sin registros',
                 infoFiltered: '(de _MAX_)',
                 zeroRecords: 'Sin resultados',
-                emptyTable: 'Sin datos',
+                emptyTable: 'No hay registros para los filtros seleccionados. Pruebe ampliar el período a "Todo el historial".',
                 paginate: { first: '«', last: '»', next: '›', previous: '‹' }
             },
             dom: dom,
