@@ -38,8 +38,15 @@ public class Ventas {
     @JoinColumn(name = "id_tipo_comprobante", nullable = false)
     private TipoComprobante tipoComprobante;
 
-    @Column(name = "fecha", insertable = false, updatable = false)
+    @Column(name = "fecha", updatable = false)
     private LocalDateTime fecha;
+
+    @PrePersist
+    void asignarFechaAlCrear() {
+        if (fecha == null) {
+            fecha = LocalDateTime.now();
+        }
+    }
 
     @Column(precision = 10, scale = 2)
     private BigDecimal total = BigDecimal.ZERO;

@@ -48,6 +48,8 @@ public class VentaSchemaFixer {
 
         return args -> {
 
+            completarFechasVacias(jdbcTemplate);
+
             if (motor.esPostgres()) {
                 log.info("PostgreSQL: Hibernate crea las tablas. Se omite el SQL de MySQL.");
                 return;
@@ -74,6 +76,20 @@ public class VentaSchemaFixer {
     }
 
 
+
+    private void completarFechasVacias(JdbcTemplate jdbc) {
+        for (String tabla : new String[]{"venta", "VENTA"}) {
+            try {
+                int filas = jdbc.update("UPDATE " + tabla + " SET fecha = CURRENT_TIMESTAMP WHERE fecha IS NULL");
+                if (filas > 0) {
+                    log.info("Fecha asignada a {} venta(s) sin fecha en {}", filas, tabla);
+                }
+                return;
+            } catch (Exception e) {
+                log.debug("No se pudo completar fecha en {}: {}", tabla, e.getMessage());
+            }
+        }
+    }
 
     private void normalizarEstadosVenta(JdbcTemplate jdbc, String tabla) {
 
