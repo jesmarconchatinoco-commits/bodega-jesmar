@@ -87,7 +87,7 @@ public class TwoFactorAuthService {
         session.setAttribute(TwoFactorSessionKeys.ENVIO_EMAIL_OK, emailEnviado);
         session.setAttribute(TwoFactorSessionKeys.ERROR_ENVIO, !emailEnviado);
 
-        if (twoFactorProperties.isMostrarCodigoEnPantalla() && !emailEnviado) {
+        if (!emailEnviado) {
             session.setAttribute(TwoFactorSessionKeys.MOSTRAR_CODIGO_PANTALLA, true);
         } else {
             session.removeAttribute(TwoFactorSessionKeys.MOSTRAR_CODIGO_PANTALLA);
