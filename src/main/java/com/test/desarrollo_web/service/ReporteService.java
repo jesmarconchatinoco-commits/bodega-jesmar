@@ -4,9 +4,11 @@ import com.test.desarrollo_web.Models.ReporteHistorial;
 import com.test.desarrollo_web.Repository.*;
 import com.test.desarrollo_web.dto.ReporteFiltroDto;
 import com.test.desarrollo_web.util.CsvExportUtil;
+import com.test.desarrollo_web.util.SqlMySqlAPostgres;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,6 +30,9 @@ public class ReporteService {
 
     @PersistenceContext
     private EntityManager entityManager;
+
+    @Value("${spring.datasource.url:}")
+    private String urlBaseDatos;
 
     private final ReporteHistorialRepository historialRepository;
     private final ClienteRepository clienteRepository;
@@ -592,7 +597,7 @@ public class ReporteService {
 
     @SuppressWarnings("unchecked")
     private List<Object[]> ejecutarNativa(String sql, List<Object> params) {
-        Query q = entityManager.createNativeQuery(sql);
+        Query q = entityManager.createNativeQuery(sqlDeMotor(sql));
         for (int i = 0; i < params.size(); i++) {
             q.setParameter(i + 1, params.get(i));
         }
@@ -600,7 +605,7 @@ public class ReporteService {
     }
 
     private BigDecimal scalarDecimal(String sql, List<Object> params) {
-        Query q = entityManager.createNativeQuery(sql);
+        Query q = entityManager.createNativeQuery(sqlDeMotor(sql));
         for (int i = 0; i < params.size(); i++) {
             q.setParameter(i + 1, params.get(i));
         }
@@ -610,6 +615,13 @@ public class ReporteService {
 
     private long scalarLong(String sql, List<Object> params) {
         return scalarDecimal(sql, params).longValue();
+    }
+
+    private String sqlDeMotor(String sql) {
+        if (urlBaseDatos != null && urlBaseDatos.toLowerCase(Locale.ROOT).contains("postgresql")) {
+            return SqlMySqlAPostgres.convertir(sql);
+        }
+        return sql;
     }
 
     private BigDecimal calcularUtilidad(ReporteFiltroDto filtro) {

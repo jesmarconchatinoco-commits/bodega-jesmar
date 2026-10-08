@@ -27,8 +27,13 @@ public class ImagenStorageFixer {
     @Order(50)
     CommandLineRunner alinearAlmacenamientoImagenes(JdbcTemplate jdbcTemplate,
                                                     StoragePathResolver storagePathResolver,
+                                                    MotorBaseDatos motor,
                                                     @Value("${app.upload.dir:src/main/resources/imagen}") String uploadDir) {
         return args -> {
+            if (motor.esPostgres()) {
+                log.info("PostgreSQL: se omite el ajuste de imagenes pensado para MySQL.");
+                return;
+            }
             Path baseImagen = storagePathResolver.resolve(uploadDir);
             moverCarpetaLegacy(baseImagen, "producto", ImageStorageCategory.PRESENTACIONES.getFolder());
             moverCarpetaLegacy(baseImagen, "productos", ImageStorageCategory.PRESENTACIONES.getFolder());

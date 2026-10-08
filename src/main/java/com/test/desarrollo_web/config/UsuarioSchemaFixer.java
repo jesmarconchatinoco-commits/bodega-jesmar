@@ -12,13 +12,18 @@ public class UsuarioSchemaFixer {
     private static final Logger log = LoggerFactory.getLogger(UsuarioSchemaFixer.class);
 
     private final JdbcTemplate jdbcTemplate;
+    private final MotorBaseDatos motor;
 
-    public UsuarioSchemaFixer(JdbcTemplate jdbcTemplate) {
+    public UsuarioSchemaFixer(JdbcTemplate jdbcTemplate, MotorBaseDatos motor) {
         this.jdbcTemplate = jdbcTemplate;
+        this.motor = motor;
     }
 
     @PostConstruct
     public void asegurarColumnaTelefono() {
+        if (motor.esPostgres()) {
+            return;
+        }
         try {
             Integer existe = jdbcTemplate.queryForObject(
                     "SELECT COUNT(*) FROM information_schema.COLUMNS "

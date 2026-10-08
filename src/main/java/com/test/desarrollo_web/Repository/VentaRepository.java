@@ -3,19 +3,22 @@ package com.test.desarrollo_web.Repository;
 import com.test.desarrollo_web.Models.Ventas;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
 public interface VentaRepository extends JpaRepository<Ventas, Long> {
 
     @Query(value = "SELECT COALESCE(SUM(total), 0) FROM VENTA " +
-            "WHERE DATE(fecha) = CURDATE() AND estado <> 'ANULADO'", nativeQuery = true)
+            "WHERE CAST(fecha AS DATE) = CURRENT_DATE AND estado <> 'ANULADO'", nativeQuery = true)
     BigDecimal sumVentasDelDia();
 
     @Query(value = "SELECT COALESCE(SUM(total), 0) FROM VENTA " +
-            "WHERE YEAR(fecha) = YEAR(CURDATE()) AND MONTH(fecha) = MONTH(CURDATE()) " +
+            "WHERE EXTRACT(YEAR FROM fecha) = EXTRACT(YEAR FROM CURRENT_DATE) " +
+            "AND EXTRACT(MONTH FROM fecha) = EXTRACT(MONTH FROM CURRENT_DATE) " +
             "AND estado <> 'ANULADO'", nativeQuery = true)
     BigDecimal sumVentasDelMes();
 
@@ -38,21 +41,25 @@ public interface VentaRepository extends JpaRepository<Ventas, Long> {
             """)
     Optional<Ventas> findByIdWithDetalles(Long id);
 
-    @Query(value = "SELECT COUNT(*) FROM VENTA WHERE DATE(fecha) = CURDATE() AND estado <> 'ANULADO'", nativeQuery = true)
+    @Query(value = "SELECT COUNT(*) FROM VENTA WHERE CAST(fecha AS DATE) = CURRENT_DATE AND estado <> 'ANULADO'", nativeQuery = true)
     long countVentasDelDia();
 
-    @Query(value = "SELECT COUNT(*) FROM VENTA WHERE YEAR(fecha) = YEAR(CURDATE()) " +
-            "AND MONTH(fecha) = MONTH(CURDATE()) AND estado <> 'ANULADO'", nativeQuery = true)
+    @Query(value = "SELECT COUNT(*) FROM VENTA WHERE EXTRACT(YEAR FROM fecha) = EXTRACT(YEAR FROM CURRENT_DATE) " +
+            "AND EXTRACT(MONTH FROM fecha) = EXTRACT(MONTH FROM CURRENT_DATE) AND estado <> 'ANULADO'", nativeQuery = true)
     long countVentasDelMes();
 
     @Query(value = """
-            SELECT DATE(fecha) AS dia, COALESCE(SUM(total), 0) AS monto
+            SELECT CAST(fecha AS DATE) AS dia, COALESCE(SUM(total), 0) AS monto
             FROM VENTA
-            WHERE fecha >= DATE_SUB(CURDATE(), INTERVAL 6 DAY) AND estado <> 'ANULADO'
-            GROUP BY DATE(fecha)
-            ORDER BY dia ASC
+            WHERE CAST(fecha AS DATE) >= :desde AND estado <> 'ANULADO'
+            GROUP BY CAST(fecha AS DATE)
+            ORDER BY 1 ASC
             """, nativeQuery = true)
-    List<Object[]> sumVentasPorDiaUltimos7();
+    List<Object[]> sumVentasPorDiaDesde(@Param("desde") LocalDate desde);
+
+    default List<Object[]> sumVentasPorDiaUltimos7() {
+        return sumVentasPorDiaDesde(LocalDate.now().minusDays(6));
+    }
 
     @Query(value = """
             SELECT canal, COALESCE(SUM(total), 0) FROM (
@@ -61,7 +68,8 @@ public interface VentaRepository extends JpaRepository<Ventas, Long> {
                         SELECT 1 FROM PEDIDO_CATALOGO pc WHERE pc.venta_id = v.id
                     ) THEN 'Venta por Web' ELSE 'Ventas POS' END AS canal
                 FROM VENTA v
-                WHERE YEAR(v.fecha) = YEAR(CURDATE()) AND MONTH(v.fecha) = MONTH(CURDATE())
+                WHERE EXTRACT(YEAR FROM v.fecha) = EXTRACT(YEAR FROM CURRENT_DATE)
+                AND EXTRACT(MONTH FROM v.fecha) = EXTRACT(MONTH FROM CURRENT_DATE)
                 AND v.estado <> 'ANULADO'
             ) ventas_canal
             GROUP BY canal

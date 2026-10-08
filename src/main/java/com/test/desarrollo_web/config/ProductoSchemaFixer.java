@@ -16,8 +16,13 @@ public class ProductoSchemaFixer {
     @Bean
     @Order(100)
     CommandLineRunner alinearEsquemaProducto(JdbcTemplate jdbcTemplate,
+                                             MotorBaseDatos motor,
                                              com.test.desarrollo_web.service.ProductoPresentacionService presentacionService) {
         return args -> {
+            if (motor.esPostgres()) {
+                log.info("PostgreSQL: se omite el ajuste de productos pensado para MySQL.");
+                return;
+            }
             unificarColumnaCategoria(jdbcTemplate);
             agregarPrecioCompra(jdbcTemplate);
             agregarCamposPresentacion(jdbcTemplate);

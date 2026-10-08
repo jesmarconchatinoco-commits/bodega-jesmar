@@ -3,7 +3,9 @@ package com.test.desarrollo_web.Repository;
 import com.test.desarrollo_web.Models.DetalleVenta;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public interface DetalleVentaRepository extends JpaRepository<DetalleVenta, Long> {
@@ -19,40 +21,52 @@ public interface DetalleVentaRepository extends JpaRepository<DetalleVenta, Long
     List<Object[]> findTop5ProductosVendidos();
 
     @Query(value = """
-            SELECT DATE(v.fecha) AS periodo,
+            SELECT CAST(v.fecha AS DATE) AS periodo,
                    COALESCE(SUM((dv.precio_unitario - COALESCE(p.precio_compra, 0)) * dv.cantidad), 0) AS ganancia
             FROM DETALLE_VENTA dv
             INNER JOIN VENTA v ON dv.id_venta = v.id
             INNER JOIN producto p ON dv.id_producto = p.id
-            WHERE v.fecha >= DATE_SUB(CURDATE(), INTERVAL 6 DAY) AND v.estado <> 'ANULADO'
-            GROUP BY DATE(v.fecha)
+            WHERE CAST(v.fecha AS DATE) >= :desde AND v.estado <> 'ANULADO'
+            GROUP BY CAST(v.fecha AS DATE)
             ORDER BY periodo ASC
             """, nativeQuery = true)
-    List<Object[]> sumGananciasPorDiaUltimos7();
+    List<Object[]> sumGananciasPorDiaDesde(@Param("desde") LocalDate desde);
+
+    default List<Object[]> sumGananciasPorDiaUltimos7() {
+        return sumGananciasPorDiaDesde(LocalDate.now().minusDays(6));
+    }
 
     @Query(value = """
-            SELECT YEAR(v.fecha) AS anio, MONTH(v.fecha) AS mes,
+            SELECT EXTRACT(YEAR FROM v.fecha) AS anio, EXTRACT(MONTH FROM v.fecha) AS mes,
                    COALESCE(SUM((dv.precio_unitario - COALESCE(p.precio_compra, 0)) * dv.cantidad), 0) AS ganancia
             FROM DETALLE_VENTA dv
             INNER JOIN VENTA v ON dv.id_venta = v.id
             INNER JOIN producto p ON dv.id_producto = p.id
-            WHERE v.fecha >= DATE_SUB(CURDATE(), INTERVAL 11 MONTH) AND v.estado <> 'ANULADO'
-            GROUP BY YEAR(v.fecha), MONTH(v.fecha)
+            WHERE CAST(v.fecha AS DATE) >= :desde AND v.estado <> 'ANULADO'
+            GROUP BY EXTRACT(YEAR FROM v.fecha), EXTRACT(MONTH FROM v.fecha)
             ORDER BY anio ASC, mes ASC
             """, nativeQuery = true)
-    List<Object[]> sumGananciasPorMesUltimos12();
+    List<Object[]> sumGananciasPorMesDesde(@Param("desde") LocalDate desde);
+
+    default List<Object[]> sumGananciasPorMesUltimos12() {
+        return sumGananciasPorMesDesde(LocalDate.now().minusMonths(11));
+    }
 
     @Query(value = """
-            SELECT YEAR(v.fecha) AS anio,
+            SELECT EXTRACT(YEAR FROM v.fecha) AS anio,
                    COALESCE(SUM((dv.precio_unitario - COALESCE(p.precio_compra, 0)) * dv.cantidad), 0) AS ganancia
             FROM DETALLE_VENTA dv
             INNER JOIN VENTA v ON dv.id_venta = v.id
             INNER JOIN producto p ON dv.id_producto = p.id
-            WHERE v.fecha >= DATE_SUB(CURDATE(), INTERVAL 4 YEAR) AND v.estado <> 'ANULADO'
-            GROUP BY YEAR(v.fecha)
+            WHERE CAST(v.fecha AS DATE) >= :desde AND v.estado <> 'ANULADO'
+            GROUP BY EXTRACT(YEAR FROM v.fecha)
             ORDER BY anio ASC
             """, nativeQuery = true)
-    List<Object[]> sumGananciasPorAnioUltimos5();
+    List<Object[]> sumGananciasPorAnioDesde(@Param("desde") LocalDate desde);
+
+    default List<Object[]> sumGananciasPorAnioUltimos5() {
+        return sumGananciasPorAnioDesde(LocalDate.now().minusYears(4));
+    }
 
     @Query("""
             SELECT v.fecha, dv.precioUnitario, dv.cantidad, COALESCE(p.precioCompra, 0)

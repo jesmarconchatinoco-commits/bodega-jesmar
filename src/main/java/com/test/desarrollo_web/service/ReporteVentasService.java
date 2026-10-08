@@ -5,9 +5,11 @@ import com.test.desarrollo_web.dto.ReporteFiltroDto;
 import com.test.desarrollo_web.dto.ReporteVentaFilaDto;
 import com.test.desarrollo_web.dto.ReporteVentasDocumentoDto;
 import com.test.desarrollo_web.dto.ReporteVentasResumenDto;
+import com.test.desarrollo_web.util.SqlMySqlAPostgres;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,6 +19,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.Locale;
 
 @Service
 public class ReporteVentasService {
@@ -28,6 +31,9 @@ public class ReporteVentasService {
 
     @PersistenceContext
     private EntityManager entityManager;
+
+    @Value("${spring.datasource.url:}")
+    private String urlBaseDatos;
 
     private final PermissionService permissionService;
 
@@ -103,7 +109,11 @@ public class ReporteVentasService {
                  ORDER BY v.fecha DESC, v.numero_documento DESC, c.nombre ASC, u.nombre ASC, v.total DESC
                 """;
 
-        Query q = entityManager.createNativeQuery(sql);
+        String consulta = sql;
+        if (urlBaseDatos != null && urlBaseDatos.toLowerCase(Locale.ROOT).contains("postgresql")) {
+            consulta = SqlMySqlAPostgres.convertir(sql);
+        }
+        Query q = entityManager.createNativeQuery(consulta);
         for (int i = 0; i < fs.params().size(); i++) {
             q.setParameter(i + 1, fs.params().get(i));
         }

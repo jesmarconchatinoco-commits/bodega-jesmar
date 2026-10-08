@@ -44,9 +44,14 @@ public class VentaSchemaFixer {
 
     @Order(10)
 
-    CommandLineRunner alinearEsquemaVenta(JdbcTemplate jdbcTemplate) {
+    CommandLineRunner alinearEsquemaVenta(JdbcTemplate jdbcTemplate, MotorBaseDatos motor) {
 
         return args -> {
+
+            if (motor.esPostgres()) {
+                log.info("PostgreSQL: Hibernate crea las tablas. Se omite el SQL de MySQL.");
+                return;
+            }
 
             for (String tabla : new String[]{"venta", "VENTA", "ventas"}) {
 
